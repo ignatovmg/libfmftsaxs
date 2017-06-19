@@ -1,0 +1,210 @@
+if(NOT EMBED_LIBMFFTSAXS)
+  cmake_minimum_required(VERSION 3.0)
+endif()
+
+set(libmfftsaxs_version_major 1)
+set(libmfftsaxs_version_minor 0)
+set(libmfftsaxs_version_patch 0)
+set(libmfftsaxs_version
+  "${libmfftsaxs_version_major}.${libmfftsaxs_version_minor}.${libmfftsaxs_version_patch}")
+
+project(mfftsaxs
+  LANGUAGES C
+  VERSION ${libmfftsaxs_version})
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
+
+#link_directories($ENV{HOME}/Projects/DOCK/libmfft/build/lib)
+#include_directories($ENV{HOME}/Projects/DOCK/libmfft/build/include)
+
+#################
+# BUILD OPTIONS #
+#################
+option( SONAME             "Set the (SO)VERSION of the target"	   ON  )
+option( BUILD_SHARED_LIBS  "Build Shared Library (OFF for Static)" OFF )
+option( PROFILE            "Generate profiling information"        OFF )
+option( BUILD_TESTS        "Build tests"                           ON  )
+option( BUILD_DOCS         "Create and install the HTML based 
+                            API documentation (requires Doxygen)"  ON  )
+option( USE_LTO            "Use Link Time Optimization"            ON  )
+option( MPI                "Message passing interface"             OFF  )
+
+# Default installation directory is set to $HOME
+if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set (CMAKE_INSTALL_PREFIX $ENV{HOME} CACHE PATH "Base directory for installation" FORCE)
+endif()
+
+set (CMAKE_PREFIX_PATH $ENV{HOME})
+
+##################
+# COMPILER FLAGS #
+##################
+if (BUILD_SHARED_LIBS)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden -fPIC")
+endif ()
+
+if(PROFILE)
+  set(CMAKE_C_FLAGS "-pg ${CMAKE_C_FLAGS}")
+  set(CMAKE_EXE_LINKER_FLAGS "-pg ${CMAKE_EXE_LINKER_FLAGS}")
+endif()
+
+if (MPI)
+  add_definitions(-D_MPI_)
+  set(CMAKE_C_COMPILER mpicc)
+endif ()
+
+set(CMAKE_C_FLAGS
+  "${CMAKE_C_FLAGS} -std=c11")
+set(CMAKE_C_FLAGS_DEBUG
+  "${CMAKE_C_FLAGS_DEBUG} -Wall -Wshadow -Wpointer-arith -Wcast-qual -Winline -Werror -Wextra -Wfatal-errors -Wstrict-prototypes -g -pg")
+set(CMAKE_C_FLAGS_RELEASE
+  "${CMAKE_C_FLAGS_RELEASE}")
+
+if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug" AND USE_LTO)
+  include(CheckCCompilerFlag)
+  check_c_compiler_flag(-flto HAS_LINK_TIME_OPTIMIZATION)
+  #check whether ar supports plugins
+  set(AR_SUPPORT 1)
+  if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
+    execute_process(
+      COMMAND ar --help
+      COMMAND grep plugin
+      OUTPUT_VARIABLE AR_SUPPORT)
+  endif()
+  if(HAS_LINK_TIME_OPTIMIZATION AND AR_SUPPORT)
+    set(CMAKE_C_FLAGS
+      "${CMAKE_C_FLAGS} -flto")
+    if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
+      set(CMAKE_AR "gcc-ar")
+      set(CMAKE_RANLIB "gcc-ranlib")
+    endif()
+  endif()
+endif()
+
+############
+# SOURCES  #
+############
+file(GLOB LIBLBFGSB_SOURCES 
+	lbfgsb/src/lbfgsb.c
+	lbfgsb/src/linesearch.c 
+	lbfgsb/src/subalgorithms.c 
+	lbfgsb/src/print.c
+    lbfgsb/src/linpack.c
+    lbfgsb/src/miniCBLAS.c
+    lbfgsb/src/timer.c)
+file(GLOB LIBLBFGSB_HEADERS lbfgsb/src/lbfgsb.h)
+
+file(GLOB LIBMFFTSAXS_SOURCES src/*.c)
+file(GLOB LIBMFFTSAXS_PUBLIC_HEADERS src/*.h )
+
+#################
+# FIND PACKAGES #
+#################
+find_package(mol2 REQUIRED)
+
+if (MPI)
+  find_package(MPI REQUIRED)
+endif ()
+
+############
+# LIBRARY  #
+############
+#set install subdirs
+set(LIB_INSTALL_DIR     "lib"                        CACHE PATH "Where to install libraries to.")
+set(INCLUDE_INSTALL_DIR "include"                    CACHE PATH "Where to install headers to.")
+set(CONFIG_INSTALL_DIR  "lib/cmake/${PROJECT_NAME}"  CACHE PATH "Where to install configs to.")
+
+add_library(lbfgsb ${LIBLBFGSB_SOURCES})
+target_link_libraries(lbfgsb gsl gslcblas m)
+
+add_library(mfftsaxs ${LIBMFFTSAXS_SOURCES})
+target_link_libraries(mfftsaxs lbfgsb fftw3 mol2 gmp check rt m)
+target_include_directories(mfftsaxs
+  PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
+    "$<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>")
+  #PRIVATE
+  #  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lbfgsb/src>")
+set_target_properties(mfftsaxs PROPERTIES PUBLIC_HEADER "${LIBMFFTSAXS_PUBLIC_HEADERS}")
+set_target_properties(mfftsaxs PROPERTIES VERSION "${libmfftsaxs_version}")
+
+if (MPI)
+  target_include_directories(mfftsaxs 
+				PUBLIC 
+				"$<BUILD_INTERFACE:${MPI_INCLUDE_PATH}>")
+  if(MPI_COMPILE_FLAGS)
+    set_target_properties(mfftsaxs
+				PROPERTIES COMPILE_FLAGS "${MPI_COMPILE_FLAGS}")
+  endif()
+
+  if(MPI_LINK_FLAGS)
+    set_target_properties(mfftsaxs 
+				PROPERTIES LINK_FLAGS "${MPI_LINK_FLAGS}")
+  endif()
+endif ()
+
+add_subdirectory(tools)
+
+############
+# INSTALL  #
+############
+install(TARGETS                   mfftsaxs
+	EXPORT                    mfftsaxsTargets
+	LIBRARY DESTINATION       "${LIB_INSTALL_DIR}"
+	ARCHIVE DESTINATION       "${LIB_INSTALL_DIR}"
+	PUBLIC_HEADER DESTINATION "${INCLUDE_INSTALL_DIR}/mfftsaxs")
+
+############
+#  CONFIG  #
+############
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/mfftsaxs/mfftsaxsConfigVersion.cmake
+                                 VERSION       ${libmfftsaxs_version}
+                                 COMPATIBILITY AnyNewerVersion)
+
+configure_package_config_file(cmake/mfftsaxsConfig.cmake.in
+                              ${CMAKE_CURRENT_BINARY_DIR}/mfftsaxs/mfftsaxsConfig.cmake
+                              INSTALL_DESTINATION "${CONFIG_INSTALL_DIR}")
+
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/mfftsaxs/mfftsaxsConfig.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/mfftsaxs/mfftsaxsConfigVersion.cmake
+  DESTINATION ${CONFIG_INSTALL_DIR})
+
+install(EXPORT mfftsaxsTargets
+  FILE mfftsaxsTargets.cmake
+  DESTINATION ${CONFIG_INSTALL_DIR})
+
+#################
+# DOCUMENTATION #
+#################
+# add a target to generate API documentation with Doxygen
+if(BUILD_DOCS)
+  find_package(Doxygen)
+  if(DOXYGEN_FOUND)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/doc/Doxyfile @ONLY)
+    add_custom_target(doc
+      COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/doc/Doxyfile
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/
+      COMMENT "Generating API documentation with Doxygen" 
+      VERBATIM)
+    #set install dirs
+    set(DOC_INSTALL_DIR	"doc" CACHE PATH "Where to install docs to.")
+    install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/doc/" 
+  	    DESTINATION "${DOC_INSTALL_DIR}/mfftsaxs")
+  else()
+    message("Could not find Doxygen.")
+  endif(DOXYGEN_FOUND)
+endif(BUILD_DOCS)
+
+###########
+# TESTING #
+###########
+if(BUILD_TESTS)
+  find_package(Check)
+  if(CHECK_FOUND)
+    enable_testing()
+    add_subdirectory(tests)
+  else()
+    message("Could not find Check for testing")
+  endif()
+endif()
