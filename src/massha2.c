@@ -1,18 +1,22 @@
 #include "massha2.h"
 
-static inline int d_symb_index(int l, int m, int l1, int p, int L) {
+static inline int d_symb_index(int l, int m, int l1, int p, int L) 
+{
 	return (lm_index(l, m) * (L+1) + l1) * (2*L+1) + p;
 }
 
-static inline int t_index(int q, int m, int l, int l1, int L) {
+static inline int t_index(int q, int m, int l, int l1, int L) 
+{
 	return ((q * (L+1) + abs(m)) * (L+1) + l) * (L+1) + l1;
 }
 
-static inline int sum1_index(int q, int m, int m2, int l, int L) {
+static inline int sum1_index(int q, int m, int m2, int l, int L) 
+{
 	return ((q * (2*L+1) + m + L) * (2*L+1) + m2 + L) * (L+1) + l;
 }
 
-static inline int sum2_index(int m, int m1, int m2, int L) {
+static inline int sum2_index(int m, int m1, int m2, int L) 
+{
 	m  = (m  < 0 ? (2*L+1+m ) : m );
 	m1 = (m1 < 0 ? (2*L+1+m1) : m1);
 	m2 = (m2 < 0 ? (2*L+1+m2) : m2);
@@ -20,7 +24,11 @@ static inline int sum2_index(int m, int m1, int m2, int L) {
 	return (m * (2*L+1) + m1) * (2*L+1) + m2;
 }
 
-static double* comp_const_int(struct sxs_spf_sing** A1, struct sxs_spf_sing** A2, struct sxs_spf_sing** B1, struct sxs_spf_sing** B2, int qnum)
+static double* comp_const_int(struct sxs_spf_sing** A1, 
+                              struct sxs_spf_sing** A2, 
+                              struct sxs_spf_sing** B1, 
+                              struct sxs_spf_sing** B2, 
+                              int qnum)
 {
 	int index;
 	double* in = (double*)calloc(qnum, sizeof(double));
@@ -51,32 +59,26 @@ static void fill_const(struct sxs_profile** profiles,
 					int* mask,
 					int L)
 {
-	double *AvBv, *AvBd, *AvBw, *AdBv, *AdBd, *AdBw, *AwBv, *AwBd, *AwBw;
+	double *VV, *VD, *VW, *DD, *DW, *WW;
 	struct sxs_profile* profile;
 	
 	for (int i = 0; i < (2*L+1)*(2*L+1)*(2*L+1); i++) {
 		if (mask[i] == 1) {
 			profile = profiles[i];
-			AvBv = profile->AvBv;
-			AvBd = profile->AvBd;
-			AvBw = profile->AvBw;
-			AdBv = profile->AdBv;
-			AdBd = profile->AdBd;
-			AdBw = profile->AdBw;
-			AwBv = profile->AwBv;
-			AwBd = profile->AwBd;
-			AwBw = profile->AwBw;
+			VV = profile->VV;
+			VD = profile->VD;
+			VW = profile->VW;
+			DD = profile->DD;
+			DW = profile->DW;
+			WW = profile->WW;
 		
 			for (int q = 0; q < profile->qnum; q++) {
-				AvBv[q] = const_int_VV[q];
-				AvBd[q] = const_int_VD[q];
-				AvBw[q] = const_int_VW[q];
-				AdBv[q] = const_int_VD[q];
-				AdBd[q] = const_int_DD[q];
-				AdBw[q] = const_int_DW[q];
-				AwBv[q] = const_int_VW[q];
-				AwBd[q] = const_int_DW[q];
-				AwBw[q] = const_int_WW[q];
+				VV[q] = const_int_VV[q];
+				VD[q] = const_int_VD[q] * 2;
+				VW[q] = const_int_VW[q] * 2;
+				DD[q] = const_int_DD[q];
+				DW[q] = const_int_DW[q] * 2;
+				WW[q] = const_int_WW[q];
 			}
 		}
 	}
@@ -84,26 +86,23 @@ static void fill_const(struct sxs_profile** profiles,
 
 static void fill_var(struct sxs_profile** profiles, fftw_complex* fft, int* mask, int q, int L)
 {
-	int offset[9];
+	int offset[6];
 	int fft_size = (2*L+1)*(2*L+1)*(2*L+1);
 	struct sxs_profile* profile;
 	
-	for (int i = 0; i < 9; i++) {
+	for (int i = 0; i < 6; i++) {
 		offset[i] = i * fft_size;
 	}
 	
 	for (int i = 0; i < fft_size; i++) {
 		if (mask[i] == 1) {
 			profile = profiles[i];
-			profile->AvBv[q] += 2.0 * creal(fft[offset[0] + i]);
-			profile->AvBd[q] += 2.0 * creal(fft[offset[1] + i]);
-			profile->AvBw[q] += 2.0 * creal(fft[offset[2] + i]);
-			profile->AdBv[q] += 2.0 * creal(fft[offset[3] + i]);
-			profile->AdBd[q] += 2.0 * creal(fft[offset[4] + i]);
-			profile->AdBw[q] += 2.0 * creal(fft[offset[5] + i]);
-			profile->AwBv[q] += 2.0 * creal(fft[offset[6] + i]);
-			profile->AwBd[q] += 2.0 * creal(fft[offset[7] + i]);
-			profile->AwBw[q] += 2.0 * creal(fft[offset[8] + i]);
+			profile->VV[q] += 2.0 * creal(fft[offset[0] + i]);
+			profile->VD[q] += 2.0 * creal(fft[offset[1] + i]);
+			profile->VW[q] += 2.0 * creal(fft[offset[2] + i]);
+			profile->DD[q] += 2.0 * creal(fft[offset[3] + i]);
+			profile->DW[q] += 2.0 * creal(fft[offset[4] + i]);
+			profile->WW[q] += 2.0 * creal(fft[offset[5] + i]);
 		}
 	};
 }
@@ -278,12 +277,12 @@ static void compute_sum1(
 			for (m2 = -L; m2 <= L; m2++) {
 				sidx3 = (sidx2 + m2 + L) * (L+1);
 				
-				for (l = abs(m); l < L+1; l++) {
+				for (l = abs(m); l <= L; l++) {
 					tidx2 = (tidx1 + l) * (L+1);
 					
 					val_re = 0.0;
 					val_im = 0.0;
-					for (l1 = max(abs(m2), abs(m)); l1 < L+1; l1++) {
+					for (l1 = max(abs(m2), abs(m)); l1 <= L; l1++) {
 						
 						d_val = d_data[index_d_array(L, l1, m, m2)];
 						
@@ -292,11 +291,8 @@ static void compute_sum1(
 						B_im_val = B_im[bidx];
 						
 						tidx3 = tidx2 + l1;
-						val_re += d_val * B_re_val * t_loc_re[tidx3] - 
-								  d_val * B_im_val * t_loc_im[tidx3]; // B, T - conjugate
-								  
-						val_im -= d_val * B_re_val * t_loc_im[tidx3] + 
-								  d_val * B_im_val * t_loc_re[tidx3];
+						val_re += d_val * (B_re_val * t_loc_re[tidx3] - B_im_val * t_loc_im[tidx3]); // B, T - conjugate
+						val_im -= d_val * (B_re_val * t_loc_im[tidx3] + B_im_val * t_loc_re[tidx3]);
 								  
 						/*tidx3 = t_index(q, abs(m), l, l1, L);
 						val_re += d_val * B_re_val * t_matrix_re[tidx3] - 
@@ -408,15 +404,15 @@ static void compute_sum2(
 	int fft_rank = (2*L+1);
 	int d_stride = fft_rank * fft_rank;
 			
-	int offset[9];
+	int offset[6];
 	int fft_size = fft_rank * fft_rank * fft_rank;
 	
-	for (int i = 0; i < 9; i++) {
+	for (int i = 0; i < 6; i++) {
 		offset[i] = i * fft_size;
 	}
 	
-	double val_re[9], val_im[9];
-	size_t val_size = 9 * sizeof(double);
+	double val_re[6], val_im[6];
+	size_t val_size = 6 * sizeof(double);
 	
 	double *V_re, *V_im, *D_re, *D_im, *W_re, *W_im;
 	V_re = A->V[q]->re;
@@ -426,7 +422,11 @@ static void compute_sum2(
 	W_re = A->W[q]->re;
 	W_im = A->W[q]->im;
 	
-	double A_re, A_im, d_val;
+	double Vval_re, Vval_im, 
+	       Dval_re, Dval_im, 
+	       Wval_re, Wval_im, 
+	       d_val;
+	       
 	int l, m2, m1, m;
 	int sum1idx1, sum1idx2, sum1idx3, sum1idx4;
 	int sum2idx1, sum2idx2, sum2idx3, aidx, didx;	
@@ -451,63 +451,45 @@ static void compute_sum2(
 					d_val = d_data[didx + l * d_stride];
 					
 					aidx = lm_index(l, m1);
-					A_re = V_re[aidx];
-					A_im = V_im[aidx];
+					Vval_re = V_re[aidx];
+					Vval_im = V_im[aidx];
+					Dval_re = D_re[aidx];
+					Dval_im = D_im[aidx];
+					Wval_re = W_re[aidx];
+					Wval_im = W_im[aidx];
 					
 					sum1idx4 = sum1idx3 + l;
-					val_re[0] += d_val * (A_re * sum_v_re[sum1idx4] - A_im * sum_v_im[sum1idx4]);	  
-					val_im[0] += d_val * (A_re * sum_v_im[sum1idx4] + A_im * sum_v_re[sum1idx4]);
+					val_re[0] += d_val * (  Vval_re * sum_v_re[sum1idx4] - Vval_im * sum_v_im[sum1idx4]);            
+					val_im[0] += d_val * (  Vval_re * sum_v_im[sum1idx4] + Vval_im * sum_v_re[sum1idx4]);
 					
-					val_re[1] += d_val * (A_re * sum_d_re[sum1idx4] - A_im * sum_d_im[sum1idx4]);	  
-					val_im[1] += d_val * (A_re * sum_d_im[sum1idx4] + A_im * sum_d_re[sum1idx4]);
+					val_re[1] += d_val * (  Vval_re * sum_d_re[sum1idx4] + Dval_re * sum_v_re[sum1idx4]
+					                      - Vval_im * sum_d_im[sum1idx4] - Dval_im * sum_v_im[sum1idx4]);	  
+					val_im[1] += d_val * (  Vval_re * sum_d_im[sum1idx4] + Dval_re * sum_v_im[sum1idx4]
+					                      + Vval_im * sum_d_re[sum1idx4] + Dval_im * sum_v_re[sum1idx4]);
 
-					val_re[2] += d_val * (A_re * sum_w_re[sum1idx4] - A_im * sum_w_im[sum1idx4]);	  
-					val_im[2] += d_val * (A_re * sum_w_im[sum1idx4] + A_im * sum_w_re[sum1idx4]);
-					
-					A_re = D_re[aidx];
-					A_im = D_im[aidx];
-					
-					val_re[3] += d_val * (A_re * sum_v_re[sum1idx4] - A_im * sum_v_im[sum1idx4]);	  
-					val_im[3] += d_val * (A_re * sum_v_im[sum1idx4] + A_im * sum_v_re[sum1idx4]);
-					
-					val_re[4] += d_val * (A_re * sum_d_re[sum1idx4] - A_im * sum_d_im[sum1idx4]);	  
-					val_im[4] += d_val * (A_re * sum_d_im[sum1idx4] + A_im * sum_d_re[sum1idx4]);
+					val_re[2] += d_val * (  Vval_re * sum_w_re[sum1idx4] + Wval_re * sum_v_re[sum1idx4]
+					                      - Vval_im * sum_w_im[sum1idx4] - Wval_im * sum_v_im[sum1idx4]);	  
+					val_im[2] += d_val * (  Vval_re * sum_w_im[sum1idx4] + Wval_re * sum_v_im[sum1idx4]
+					                      + Vval_im * sum_w_re[sum1idx4] + Wval_im * sum_v_re[sum1idx4]);
+					                      
+					val_re[3] += d_val * (  Dval_re * sum_d_re[sum1idx4] - Dval_im * sum_d_im[sum1idx4]);
+					val_im[3] += d_val * (  Dval_re * sum_d_im[sum1idx4] + Dval_im * sum_d_re[sum1idx4]);
 
-					val_re[5] += d_val * (A_re * sum_w_re[sum1idx4] - A_im * sum_w_im[sum1idx4]);	  
-					val_im[5] += d_val * (A_re * sum_w_im[sum1idx4] + A_im * sum_w_re[sum1idx4]);
-					
-					A_re = W_re[aidx];
-					A_im = W_im[aidx];
-					
-					val_re[6] += d_val * (A_re * sum_v_re[sum1idx4] - A_im * sum_v_im[sum1idx4]);	  
-					val_im[6] += d_val * (A_re * sum_v_im[sum1idx4] + A_im * sum_v_re[sum1idx4]);
-					
-					val_re[7] += d_val * (A_re * sum_d_re[sum1idx4] - A_im * sum_d_im[sum1idx4]);	  
-					val_im[7] += d_val * (A_re * sum_d_im[sum1idx4] + A_im * sum_d_re[sum1idx4]);
-
-					val_re[8] += d_val * (A_re * sum_w_re[sum1idx4] - A_im * sum_w_im[sum1idx4]);	  
-					val_im[8] += d_val * (A_re * sum_w_im[sum1idx4] + A_im * sum_w_re[sum1idx4]);
+					val_re[4] += d_val * (  Dval_re * sum_w_re[sum1idx4] + Wval_re * sum_d_re[sum1idx4] 
+					                      - Dval_im * sum_w_im[sum1idx4] - Wval_im * sum_d_im[sum1idx4]);	  
+					val_im[4] += d_val * (  Dval_re * sum_w_im[sum1idx4] + Wval_re * sum_d_im[sum1idx4]
+					                      + Dval_im * sum_w_re[sum1idx4] + Wval_im * sum_d_re[sum1idx4]);
+					                      
+					val_re[5] += d_val * (Wval_re * sum_w_re[sum1idx4] - Wval_im * sum_w_im[sum1idx4]);	  
+					val_im[5] += d_val * (Wval_re * sum_w_im[sum1idx4] + Wval_im * sum_w_re[sum1idx4]);
 				}	
 				
-				/*sum2[sum2idx3 + offset[0]] = val_re[0] + I * val_im[0];
+				sum2[sum2idx3 + offset[0]] = val_re[0] + I * val_im[0];
 				sum2[sum2idx3 + offset[1]] = val_re[1] + I * val_im[1];
 				sum2[sum2idx3 + offset[2]] = val_re[2] + I * val_im[2];
 				sum2[sum2idx3 + offset[3]] = val_re[3] + I * val_im[3];
 				sum2[sum2idx3 + offset[4]] = val_re[4] + I * val_im[4];
 				sum2[sum2idx3 + offset[5]] = val_re[5] + I * val_im[5];
-				sum2[sum2idx3 + offset[6]] = val_re[6] + I * val_im[6];
-				sum2[sum2idx3 + offset[7]] = val_re[7] + I * val_im[7];
-				sum2[sum2idx3 + offset[8]] = val_re[8] + I * val_im[8];*/
-				
-				sum2[sum2idx3 + offset[0]] = val_re[0] + I * val_im[0];
-				sum2[sum2idx3 + offset[1]] = (val_re[1] + val_re[3]) + I * (val_im[1] + val_im[3]);
-				sum2[sum2idx3 + offset[2]] = (val_re[2] + val_re[6]) + I * (val_im[2] + val_im[6]);
-				//sum2[sum2idx3 + offset[3]] = 0.0; //val_re[3] + I * val_im[3];
-				sum2[sum2idx3 + offset[4]] = val_re[4] + I * val_im[4];
-				sum2[sum2idx3 + offset[5]] = (val_re[5] + val_re[7]) + I * (val_im[5] + val_im[7]);
-				//sum2[sum2idx3 + offset[6]] = 0.0; //val_re[6] + I * val_im[6];
-				//sum2[sum2idx3 + offset[7]] = 0.0; //val_re[7] + I * val_im[7];
-				sum2[sum2idx3 + offset[8]] = val_re[8] + I * val_im[8];
 			}
 		}
 	}
@@ -522,8 +504,8 @@ static void simple_ft(
 	int ft_size = ft_rank * ft_rank * ft_rank;
 	double step = 2*M_PI / ft_rank;
 	
-	int offset[9];
-	for (int i = 0; i < 9; i++) {
+	int offset[6];
+	for (int i = 0; i < 6; i++) {
 		offset[i] = i * ft_size;
 	}
 	
@@ -537,7 +519,7 @@ static void simple_ft(
 	int tmp, mm1m2, id;
 	int a2, g1, g2, m, m1, m2, exp_id;
 	double exp_re_val, exp_im_val;
-	double val[9];
+	double val[6];
 	
 	for (int i = 0; i < ft_size; i++) {
 	
@@ -547,7 +529,7 @@ static void simple_ft(
 			g1  = tmp % ft_rank;
 			a2  = tmp / ft_rank;
 			
-			memset(val, 0, 9*sizeof(double));
+			memset(val, 0, 6 * sizeof(double));
 			
 			exp_id = 0;
 			mm1m2  = 0;
@@ -564,18 +546,12 @@ static void simple_ft(
 						          exp_im_val * cimag(sum2[offset[1] + mm1m2]);
 						val[2] += exp_re_val * creal(sum2[offset[2] + mm1m2]) - 
 						          exp_im_val * cimag(sum2[offset[2] + mm1m2]);
-						//val[3] += exp_re_val * creal(sum2[offset[3] + mm1m2]) - 
-						//          exp_im_val * cimag(sum2[offset[3] + mm1m2]);
+						val[3] += exp_re_val * creal(sum2[offset[3] + mm1m2]) - 
+						          exp_im_val * cimag(sum2[offset[3] + mm1m2]);
 						val[4] += exp_re_val * creal(sum2[offset[4] + mm1m2]) - 
 						          exp_im_val * cimag(sum2[offset[4] + mm1m2]);
 						val[5] += exp_re_val * creal(sum2[offset[5] + mm1m2]) - 
 						          exp_im_val * cimag(sum2[offset[5] + mm1m2]);
-						//val[6] += exp_re_val * creal(sum2[offset[6] + mm1m2]) - 
-						//          exp_im_val * cimag(sum2[offset[6] + mm1m2]);
-						//val[7] += exp_re_val * creal(sum2[offset[7] + mm1m2]) - 
-						//          exp_im_val * cimag(sum2[offset[7] + mm1m2]);
-						val[8] += exp_re_val * creal(sum2[offset[8] + mm1m2]) - 
-						          exp_im_val * cimag(sum2[offset[8] + mm1m2]);
 						
 						exp_id += g2;
 						mm1m2++;
@@ -585,25 +561,12 @@ static void simple_ft(
 				exp_id += a2;
 			}
 			
-			/*fft[offset[0] + i] = val[0];
+			fft[offset[0] + i] = val[0];
 			fft[offset[1] + i] = val[1];
 			fft[offset[2] + i] = val[2];
 			fft[offset[3] + i] = val[3];
 			fft[offset[4] + i] = val[4];
 			fft[offset[5] + i] = val[5];
-			fft[offset[6] + i] = val[6];
-			fft[offset[7] + i] = val[7];
-			fft[offset[8] + i] = val[8];*/
-			
-			fft[offset[0] + i] = val[0];
-			fft[offset[1] + i] = val[1];
-			fft[offset[2] + i] = val[2];
-			fft[offset[3] + i] = 0.0; //val[3];
-			fft[offset[4] + i] = val[4];
-			fft[offset[5] + i] = val[5];
-			fft[offset[6] + i] = 0.0; //val[6];
-			fft[offset[7] + i] = 0.0; //val[7];
-			fft[offset[8] + i] = val[8];
 		}
 	}
 	
@@ -685,9 +648,9 @@ void compute_saxs_scores(
 	int fft_size = (2*L+1)*(2*L+1)*(2*L+1);
 	int fft_many_size[] = {2*L+1, 2*L+1, 2*L+1};
 
-	fftw_complex* sum2 = (fftw_complex*) fftw_malloc(9 * fft_size * sizeof(fftw_complex));
-	fftw_complex* fft  = (fftw_complex*) fftw_malloc(9 * fft_size * sizeof(fftw_complex));
-	fftw_plan plan = fftw_plan_many_dft(3, fft_many_size, 9, 
+	fftw_complex* sum2 = (fftw_complex*) fftw_malloc(6 * fft_size * sizeof(fftw_complex));
+	fftw_complex* fft  = (fftw_complex*) fftw_malloc(6 * fft_size * sizeof(fftw_complex));
+	fftw_plan plan = fftw_plan_many_dft(3, fft_many_size, 6, 
 										sum2, NULL, 1, fft_size, 
 										fft,  NULL, 1, fft_size, 
 										FFTW_FORWARD, FFTW_PATIENT);
@@ -1039,15 +1002,15 @@ void compute_saxs_scores(
 					profiles[i]->score = point_score(profiles[i], params, 1.0, 0.0);
 					compile_intensity(profiles[i], params, 1.0, 0.0);
 					//for( int j = 0; j < qnum; j++)
-					/*printf("int: %.0f %.0f %.0f %.0f %.0f %.0f %.0f %.0f %.0f %.0f\n", profiles[i]->AvBv[j], 
-					                                                    profiles[i]->AvBd[j], 
-					                                                    profiles[i]->AvBw[j],
+					/*printf("int: %.0f %.0f %.0f %.0f %.0f %.0f %.0f %.0f %.0f %.0f\n", profiles[i]->VV[j], 
+					                                                    profiles[i]->VD[j], 
+					                                                    profiles[i]->VW[j],
 					                                                    profiles[i]->AdBv[j], 
-					                                                    profiles[i]->AdBd[j], 
-					                                                    profiles[i]->AdBw[j], 
+					                                                    profiles[i]->DD[j], 
+					                                                    profiles[i]->DW[j], 
 					                                                    profiles[i]->AwBv[j], 
 					                                                    profiles[i]->AwBd[j], 
-					                                                    profiles[i]->AwBw[j], 
+					                                                    profiles[i]->WW[j], 
 					                                                    profiles[i]->in[j]);
 					                                                    
 					//printf("score: %f\n", profiles[i]->score);

@@ -78,10 +78,10 @@ void sxs_opt_params_free(struct sxs_opt_params* params);
 /**
  * Fits every entry profile in `profiles` using L-BFGS-B algorithm. Skips profile 
  * number i if `mask[i]` != 1. sxs_profile::qvals, sxs_profile::in, sxs_profile::err 
- * must be non-empty and all cross-terms sxs_profile::AvBv ... must be precomputed
+ * must be non-empty and all cross-terms sxs_profile::VV ... must be precomputed
  * (see ).
  *
- * @param profiles Array of sxs_profile with filled cross-terms sxs_profile::AvBv ...
+ * @param profiles Array of sxs_profile with filled cross-terms sxs_profile::VV ...
  * @param params   Optimization parameters.
  * @param mask     Mask for skipping profiles.
  * @param n        Profile number.
@@ -90,10 +90,10 @@ void sxs_fit_params(struct sxs_profile** profiles, struct sxs_opt_params* params
 
 /**
  * Fits `profile` using L-BFGS-B algorithm. sxs_profile::qvals, sxs_profile::in, sxs_profile::err 
- * must be non-empty and all cross-terms sxs_profile::AvBv ... must be precomputed
+ * must be non-empty and all cross-terms sxs_profile::VV ... must be precomputed
  * (see massha2.h).
  *
- * @param profile  Profile with filled cross-terms sxs_profile::AvBv ...
+ * @param profile  Profile with filled cross-terms sxs_profile::VV ...
  * @param params   Optimization parameters.
  */
 void sxs_lbfgs_fitting(struct sxs_profile* profile, struct sxs_opt_params* params);
@@ -109,7 +109,7 @@ void sxs_lbfgs_fitting(struct sxs_profile* profile, struct sxs_opt_params* param
 double* scoring_helper(struct sxs_profile* exp, int qnum, double* qvals);
 
 /**
- * Builds full intensity from the cross-terms in `profile`, hence sxs_profile::AvBv ... must be filled.
+ * Builds full intensity from the cross-terms in `profile`, hence sxs_profile::VV ... must be filled.
  * \f{eqnarray*}{
  * I(q) = A^v{B^v}^\star(q) + G^2(c_1,q) A^d{B^d}^\star(q) + c^2_2 A^w{B^w}^\star(q) \\ 
  *   - G(c_1,q)(A^v{B^d}^\star(q) + A^d{B^v}^\star(q)) \\ 
@@ -131,10 +131,10 @@ double* scoring_helper(struct sxs_profile* exp, int qnum, double* qvals);
 void compile_intensity(struct sxs_profile* profile, double rm, double c1, double c2);
 
 /**
- * Finds the best scaling factor for the `profile` given `c1` and `c2`. Uses cross-terms sxs_profile::AvBv ...
+ * Finds the best scaling factor for the `profile` given `c1` and `c2`. Uses cross-terms sxs_profile::VV ...
  * not sxs_profile::in.
  *
- * @param profile Profile with filled cross-terms sxs_profile::AvBv ...
+ * @param profile Profile with filled cross-terms sxs_profile::VV ...
  * @param params  Parameters for optimization.
  * @param c1      First parameter (\f$0.94 < c_1 < 1.04\f$).
  * @param c2      Second parameter (\f$-2 < c_2 < 4\f$).
@@ -144,10 +144,10 @@ double best_scale(struct sxs_profile* profile, struct sxs_opt_params* params, do
 
 /**
  * Finds \f$chi\f$-score of the `profile` given `c1` and `c2`, without opitimzation. 
- * Uses cross-terms sxs_profile::AvBv ...
+ * Uses cross-terms sxs_profile::VV ...
  * not sxs_profile::in.
  *
- * @param profile Profile with filled cross-terms sxs_profile::AvBv ...
+ * @param profile Profile with filled cross-terms sxs_profile::VV ...
  * @param params  Parameters for optimization.
  * @param c1      First parameter (\f$0.94 < c_1 < 1.04\f$).
  * @param c2      Second parameter (\f$-2 < c_2 < 4\f$).
@@ -156,7 +156,7 @@ double best_scale(struct sxs_profile* profile, struct sxs_opt_params* params, do
 double point_score(struct sxs_profile* profile, struct sxs_opt_params* params, double c1, double c2);
 
 /** 
- * Fills cross-terms sxs_profile::AvBv ... given SPF coefficients in `s`.
+ * Fills cross-terms sxs_profile::VV ... given SPF coefficients in `s`.
  *
  * @param profile An instance of sxs_profile.
  * @param s       Structure filled with SPF coefficients (see atom_grp2spf).
@@ -164,7 +164,7 @@ double point_score(struct sxs_profile* profile, struct sxs_opt_params* params, d
 void spf2cross_terms(struct sxs_profile* profile, struct sxs_spf_full* s);
 
 /** 
- * Fills cross-terms sxs_profile::AvBv ... given SPF coefficients in `s` and fits 
+ * Fills cross-terms sxs_profile::VV ... given SPF coefficients in `s` and fits 
  * `profile` to the experiment using `params`.
  *
  * @param profile An instance of sxs_profile.

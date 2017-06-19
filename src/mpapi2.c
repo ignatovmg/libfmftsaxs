@@ -26,30 +26,24 @@ void sxs_profile_init(struct sxs_profile* profile, double* qvals, int qnum, int 
 		if (cross_terms_flag == 1) {
 			sxs_profile_alloc_cross_terms(profile, qnum);
 		} else {
-			profile->AvBv = NULL;
-			profile->AvBd = NULL;
-			profile->AvBw = NULL;
-			profile->AdBv = NULL;
-			profile->AdBd = NULL;
-			profile->AdBw = NULL;
-			profile->AwBv = NULL;
-			profile->AwBd = NULL;
-			profile->AwBw = NULL;
+			profile->VV = NULL;
+			profile->VD = NULL;
+			profile->VW = NULL;
+			profile->DD = NULL;
+			profile->DW = NULL;
+			profile->WW = NULL;
 		}
 	}
 }
 
 void sxs_profile_alloc_cross_terms(struct sxs_profile* profile, int qnum)
 {
-	profile->AvBv = calloc(qnum, sizeof(double));
-	profile->AvBd = calloc(qnum, sizeof(double));
-	profile->AvBw = calloc(qnum, sizeof(double));
-	profile->AdBv = calloc(qnum, sizeof(double));
-	profile->AdBd = calloc(qnum, sizeof(double));
-	profile->AdBw = calloc(qnum, sizeof(double));
-	profile->AwBv = calloc(qnum, sizeof(double));
-	profile->AwBd = calloc(qnum, sizeof(double));
-	profile->AwBw = calloc(qnum, sizeof(double));
+	profile->VV = calloc(qnum, sizeof(double));
+	profile->VD = calloc(qnum, sizeof(double));
+	profile->VW = calloc(qnum, sizeof(double));
+	profile->DD = calloc(qnum, sizeof(double));
+	profile->DW = calloc(qnum, sizeof(double));
+	profile->WW = calloc(qnum, sizeof(double));
 }
 
 void sxs_profile_destroy(struct sxs_profile* profile)
@@ -58,15 +52,12 @@ void sxs_profile_destroy(struct sxs_profile* profile)
 	myfree(profile->in);
 	myfree(profile->err);
 
-	myfree(profile->AvBv);
-	myfree(profile->AvBd);
-	myfree(profile->AvBw);
-	myfree(profile->AdBv);
-	myfree(profile->AdBd);
-	myfree(profile->AdBw);
-	myfree(profile->AwBv);
-	myfree(profile->AwBd);
-	myfree(profile->AwBw);
+	myfree(profile->VV);
+	myfree(profile->VD);
+	myfree(profile->VW);
+	myfree(profile->DD);
+	myfree(profile->DW);
+	myfree(profile->WW);
 }
 
 void sxs_profile_free(struct sxs_profile* profile)
@@ -146,15 +137,12 @@ void scale_profiles(struct sxs_profile** profiles, int n, double scale, int* mas
 			for (q = 0; q < qnum; q++) {
 				profile->in[q]   *= scale;
 				profile->err[q]  *= scale;
-				profile->AvBv[q] *= scale;
-				profile->AdBd[q] *= scale;
-				profile->AwBw[q] *= scale;
-				profile->AvBw[q] *= scale;
-				profile->AwBv[q] *= scale;
-				profile->AvBd[q] *= scale;
-				profile->AdBv[q] *= scale;
-				profile->AwBd[q] *= scale;
-				profile->AdBw[q] *= scale;
+				profile->VV[q] *= scale;
+				profile->DD[q] *= scale;
+				profile->WW[q] *= scale;
+				profile->VW[q] *= scale;
+				profile->VD[q] *= scale;
+				profile->DW[q] *= scale;
 			}
 		}
 	}
@@ -172,30 +160,24 @@ void scale_profiles_by_peak(struct sxs_profile** profiles, int n, double peak, i
 			profile = profiles[i];
 			qnum = profile->qnum;
 			
-			scale = profile->AvBv[0] +
-					profile->AdBd[0] +
-					profile->AwBw[0] +
-					profile->AvBw[0] + 
-					profile->AwBv[0] - 
-					profile->AvBd[0] -
-					profile->AdBv[0] -
-					profile->AwBd[0] -
-					profile->AdBw[0];
+			scale = profile->VV[0] +
+					profile->DD[0] +
+					profile->WW[0] +
+					profile->VW[0] -
+					profile->VD[0] -
+					profile->DW[0];
 			
 			scale = peak / scale;
 			
 			for (q = 0; q < qnum; q++) {
 				profile->in[q]   *= scale;
 				profile->err[q]  *= scale;
-				profile->AvBv[q] *= scale;
-				profile->AdBd[q] *= scale;
-				profile->AwBw[q] *= scale;
-				profile->AvBw[q] *= scale;
-				profile->AwBv[q] *= scale;
-				profile->AvBd[q] *= scale;
-				profile->AdBv[q] *= scale;
-				profile->AwBd[q] *= scale;
-				profile->AdBw[q] *= scale;
+				profile->VV[q] *= scale;
+				profile->DD[q] *= scale;
+				profile->WW[q] *= scale;
+				profile->VW[q] *= scale;
+				profile->VD[q] *= scale;
+				profile->DW[q] *= scale;
 			}
 		}
 	}

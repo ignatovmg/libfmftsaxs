@@ -24,15 +24,12 @@ struct sxs_profile
 	double* err;      /**< Intensity error. */
 	double* qvals;    /**< Scattering angle values. */
 	
-	double* AvBv;     /**< \f$ A_v(q)B_v(q)\vert_{\langle\Omega\rangle}\f$ */
-	double* AvBd;     /**< \f$ A_v(q)B_d(q)\vert_{\langle\Omega\rangle}\f$ */
-	double* AvBw;     /**< \f$ A_v(q)B_w(q)\vert_{\langle\Omega\rangle}\f$ */
-	double* AdBv;     /**< \f$ A_d(q)B_v(q)\vert_{\langle\Omega\rangle}\f$ */
-	double* AdBd;     /**< \f$ A_d(q)B_d(q)\vert_{\langle\Omega\rangle}\f$ */
-	double* AdBw;     /**< \f$ A_d(q)B_w(q)\vert_{\langle\Omega\rangle}\f$ */
-	double* AwBv;     /**< \f$ A_w(q)B_v(q)\vert_{\langle\Omega\rangle}\f$ */
-	double* AwBd;     /**< \f$ A_w(q)B_d(q)\vert_{\langle\Omega\rangle}\f$ */
-	double* AwBw;     /**< \f$ A_w(q)B_w(q)\vert_{\langle\Omega\rangle}\f$ */
+	double* VV;       /**< \f$ A_v(q)B_v(q)\vert_{\langle\Omega\rangle}\f$ */
+	double* VD;       /**< \f$ A_v(q)B_d(q) + A_d(q)B_v(q)\vert_{\langle\Omega\rangle}\f$ */
+	double* VW;       /**< \f$ A_v(q)B_w(q) + A_w(q)B_v(q)\vert_{\langle\Omega\rangle}\f$ */
+	double* DD;       /**< \f$ A_d(q)B_d(q)\vert_{\langle\Omega\rangle}\f$ */
+	double* DW;       /**< \f$ A_d(q)B_w(q) + A_w(q)B_d(q)\vert_{\langle\Omega\rangle}\f$ */
+	double* WW;       /**< \f$ A_w(q)B_w(q)\vert_{\langle\Omega\rangle}\f$ */
 	
 	double score;     /**< Profile \f$\chi\f$-score. */
 	double scale;     /**< Profile scale.*/
@@ -51,7 +48,7 @@ struct sxs_profile
  * @param qvals Array of scattering angles.
  * @param qnum  Number of scattering angles.
  * @param cross_terms_flag If equals 1, then the 
- * cross-terms of sxs_profile::AvBv are allocated as well.
+ * cross-terms of sxs_profile::VV are allocated as well.
  * @return An instance of sxs_profile. Returns NULL if case of error.
  */
 struct sxs_profile* sxs_profile_create(double* qvals, int qnum, int cross_terms_flag);
@@ -62,7 +59,7 @@ struct sxs_profile* sxs_profile_create(double* qvals, int qnum, int cross_terms_
  * @param qvals Array of scattering angles.
  * @param qnum  Number of scattering angles.
  * @param cross_terms_flag If equals 1, then the 
- * cross-terms of sxs_profile::AvBv are allocated as well.
+ * cross-terms of sxs_profile::VV are allocated as well.
  */
 void sxs_profile_init(struct sxs_profile* profile, double* qvals, int qnum, int cross_terms_flag);
 

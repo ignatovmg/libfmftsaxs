@@ -18,30 +18,27 @@ static void gradient(double* grad, double* score_val, double* point, struct sxs_
 	double G = c1 * c1 * c1 * exp(corr * q[0] * q[0]);
 	double G_der = G*(3.0 / c1 - 2.0 * c1 * mult * q[0] * q[0]);
 	
-	double* AvBv = profile->AvBv;
-	double* AvBd = profile->AvBd;
-	double* AvBw = profile->AvBw;
-	double* AdBv = profile->AdBv;
-	double* AdBd = profile->AdBd;
-	double* AdBw = profile->AdBw;
-	double* AwBv = profile->AwBv;
-	double* AwBd = profile->AwBd;
-	double* AwBw = profile->AwBw;
+	double* VV = profile->VV;
+	double* VD = profile->VD;
+	double* VW = profile->VW;
+	double* DD = profile->DD;
+	double* DW = profile->DW;
+	double* WW = profile->WW;
 	
-	double in_prev = AvBv[0] - 
-					 G  * (AvBd[0] + AdBv[0]) +
-					 c2 * (AvBw[0] + AwBv[0]) +
-					 G * G * AdBd[0] -
-					 G  * c2 * (AdBw[0] + AwBd[0]) +
-					 c2 * c2 *  AwBw[0];
+	double in_prev = VV[0] - 
+					 G  * VD[0] +
+					 c2 * VW[0] +
+					 G * G * DD[0] -
+					 G  * c2 * DW[0] +
+					 c2 * c2 *  WW[0];
 				
-	double in_der_c1_prev = - G_der * (AvBd[0] + AdBv[0]) +
-					          2.0 * G * G_der * AdBd[0] -
-					          G_der * c2 * (AdBw[0] + AwBd[0]);
+	double in_der_c1_prev = - G_der * VD[0] +
+					          2.0 * G * G_der * DD[0] -
+					          G_der * c2 * DW[0];
 					   
-	double in_der_c2_prev = AvBw[0] + AwBv[0] -
-					        G * (AdBw[0] + AwBd[0]) +
-					        2.0 * c2 * AwBw[0];
+	double in_der_c2_prev = VW[0] -
+					        G * DW[0] +
+					        2.0 * c2 * WW[0];
 					   
 	double tan, tan_c1_der, tan_c2_der, buf;
 	double in , in_der_c1,  in_der_c2;
@@ -55,20 +52,20 @@ static void gradient(double* grad, double* score_val, double* point, struct sxs_
 		G = c1_cube * exp(corr * q_cur * q_cur);
 		G_der = G * (3.0 / c1 - 2.0 * c1 * mult * q_cur * q_cur);
 	
-		in = AvBv[i] -
-		     G  * (AvBd[i] + AdBv[i]) +
-		     c2 * (AvBw[i] + AwBv[i]) +
-			 G * G * AdBd[i] -
-			 G  * c2 * (AdBw[i] + AwBd[i]) +
-			 c2 * c2 * AwBw[i];
+		in = VV[i] -
+		     G  * VD[i] +
+		     c2 * VW[i] +
+			 G * G * DD[i] -
+			 G  * c2 * DW[i] +
+			 c2 * c2 * WW[i];
 				
-		in_der_c1 = G_der * ( -(AvBd[i] + AdBv[i]) +
-					            2.0 * G * AdBd[i] -
-					            c2 * (AdBw[i] + AwBd[i]) );
+		in_der_c1 = G_der * ( -VD[i] +
+					            2.0 * G * DD[i] -
+					            c2 * DW[i] );
 					
-		in_der_c2 = AvBw[i] + AwBv[i] -
-				    G * (AdBw[i] +  AwBd[i]) +
-				    2.0 * c2 * AwBw[i];
+		in_der_c2 = VW[i] -
+				    G * DW[i] +
+				    2.0 * c2 * WW[i];
 				
 		buf = 1.0 / (q_cur - q_prev);
 		tan = (in - in_prev) * buf;
@@ -170,30 +167,24 @@ void sxs_fit_params(struct sxs_profile** profiles, struct sxs_opt_params* params
 			profile = profiles[i];
 			qnum = profiles[i]->qnum;
 			
-			scale = profile->AvBv[0] +
-					profile->AdBd[0] +
-					profile->AwBw[0] +
-					profile->AvBw[0] + 
-					profile->AwBv[0] - 
-					profile->AvBd[0] -
-					profile->AdBv[0] -
-					profile->AwBd[0] -
-					profile->AdBw[0];
+			scale =   profile->VV[0]
+					+ profile->DD[0]
+					+ profile->WW[0]
+					+ profile->VW[0]
+					- profile->VD[0]
+					- profile->DW[0];
 			
 			//printf("peak = %e, scale %e\n", peak, scale);
 			
 			scale = peak / scale;
 			
 			for (q = 0; q < qnum; q++) {
-				profile->AvBv[q] *= scale;
-				profile->AdBd[q] *= scale;
-				profile->AwBw[q] *= scale;
-				profile->AvBw[q] *= scale;
-				profile->AwBv[q] *= scale;
-				profile->AvBd[q] *= scale;
-				profile->AdBv[q] *= scale;
-				profile->AwBd[q] *= scale;
-				profile->AdBw[q] *= scale;
+				profile->VV[q] *= scale;
+				profile->DD[q] *= scale;
+				profile->WW[q] *= scale;
+				profile->VW[q] *= scale;
+				profile->VD[q] *= scale;
+				profile->DW[q] *= scale;
 			}
 			
 			sxs_lbfgs_fitting(profile, params);
@@ -278,22 +269,19 @@ double best_scale(struct sxs_profile* profile, struct sxs_opt_params* params, do
 	double corr = - mult * (c1 * c1 - 1.0);
 	double G = c1 * c1 * c1 * exp(corr * q[0] * q[0]);
 	
-	double* AvBv = profile->AvBv;
-	double* AvBd = profile->AvBd;
-	double* AvBw = profile->AvBw;
-	double* AdBv = profile->AdBv;
-	double* AdBd = profile->AdBd;
-	double* AdBw = profile->AdBw;
-	double* AwBv = profile->AwBv;
-	double* AwBd = profile->AwBd;
-	double* AwBw = profile->AwBw;
+	double* VV = profile->VV;
+	double* VD = profile->VD;
+	double* VW = profile->VW;
+	double* DD = profile->DD;
+	double* DW = profile->DW;
+	double* WW = profile->WW;
 	
-	double in_prev = AvBv[0] -
-				     G  * (AvBd[0] + AdBv[0]) +
-				     c2 * (AvBw[0] + AwBv[0]) +
-				     G  * G  *  AdBd[0] -
-				     G  * c2 * (AdBw[0] + AwBd[0]) +
-				     c2 * c2 *  AwBw[0];
+	double in_prev = VV[0] -
+				     G  * VD[0] +
+				     c2 * VW[0] +
+				     G  * G  *  DD[0] -
+				     G  * c2 * DW[0] +
+				     c2 * c2 *  WW[0];
 
 	double c1_cube = c1 * c1 * c1;
 	double buf, tan, in;
@@ -304,12 +292,12 @@ double best_scale(struct sxs_profile* profile, struct sxs_opt_params* params, do
 		q_cur = q[i];
 		G = c1_cube * exp(corr * q_cur * q_cur);
 		
-		in = AvBv[i] -
-		     G *  (AvBd[i] + AdBv[i]) +
-		     c2 * (AvBw[i] + AwBv[i]) +
-			 G * G * AdBd[i] -
-			 G * c2 * (AdBw[i] + AwBd[i]) +
-			 c2 * c2 * AwBw[i];
+		in = VV[i] -
+		     G *  VD[i] +
+		     c2 * VW[i] +
+			 G * G * DD[i] -
+			 G * c2 * DW[i] +
+			 c2 * c2 * WW[i];
 			 
 		tan = (in - in_prev) / (q_cur - q_prev);
 		buf = in - tan * q_cur;
@@ -335,15 +323,12 @@ void compile_intensity(struct sxs_profile* profile, double rm, double c1, double
 	int  qnum = profile->qnum;
 	double* q = profile->qvals;
 	
-	double* AvBv = profile->AvBv;
-	double* AvBd = profile->AvBd;
-	double* AvBw = profile->AvBw;
-	double* AdBv = profile->AdBv;
-	double* AdBd = profile->AdBd;
-	double* AdBw = profile->AdBw;
-	double* AwBv = profile->AwBv;
-	double* AwBd = profile->AwBd;
-	double* AwBw = profile->AwBw;
+	double* VV = profile->VV;
+	double* VD = profile->VD;
+	double* VW = profile->VW;
+	double* DD = profile->DD;
+	double* DW = profile->DW;
+	double* WW = profile->WW;
 	
 	double mult = pow(4.0 * M_PI / 3.0, 3.0 / 2.0) * rm * rm / (16.0 * M_PI);
 	double corr = - mult * (c1 * c1 - 1.0);
@@ -353,12 +338,12 @@ void compile_intensity(struct sxs_profile* profile, double rm, double c1, double
 	for (int i = 0; i < qnum; i++) {
 		G = c1 * c1 * c1 * exp(corr * q[i] * q[i]);
 		
-		profile->in[i] = AvBv[i] -
-						 G * (AvBd[i] + AdBv[i]) +
-						 c2 * (AvBw[i] + AwBv[i]) +
-						 G * G * AdBd[i] -
-						 G * c2 * (AdBw[i] + AwBd[i]) +
-						 c2 * c2 * AwBw[i];
+		profile->in[i] = VV[i] -
+						 G * VD[i] +
+						 c2 * VW[i] +
+						 G * G * DD[i] -
+						 G * c2 * DW[i] +
+						 c2 * c2 * WW[i];
 						 
 		profile->err[i] = rerr * profile->in[i];
 	}
@@ -405,15 +390,12 @@ double* scoring_helper(struct sxs_profile* exp, int qnum, double* qvals)
 
 double point_score(struct sxs_profile* profile, struct sxs_opt_params* params, double c1, double c2)
 {
-	double* AvBv = profile->AvBv;
-	double* AvBd = profile->AvBd;
-	double* AvBw = profile->AvBw;
-	double* AdBv = profile->AdBv;
-	double* AdBd = profile->AdBd;
-	double* AdBw = profile->AdBw;
-	double* AwBv = profile->AwBv;
-	double* AwBd = profile->AwBd;
-	double* AwBw = profile->AwBw;
+	double* VV = profile->VV;
+	double* VD = profile->VD;
+	double* VW = profile->VW;
+	double* DD = profile->DD;
+	double* DW = profile->DW;
+	double* WW = profile->WW;
 
 	int qnum  = profile->qnum;
 	double* q = profile->qvals;
@@ -422,12 +404,12 @@ double point_score(struct sxs_profile* profile, struct sxs_opt_params* params, d
 	double corr = - params->mult * (c1 * c1 - 1.0);   
 	double G = c1 * c1 * c1 * exp(corr * q[0] * q[0]);
 	
-	double in_prev = AvBv[0] - 
-					 G  * (AvBd[0] + AdBv[0]) +
-					 c2 * (AvBw[0] + AwBv[0]) +
-					 G * G * AdBd[0] -
-					 G  * c2 * (AdBw[0] + AwBd[0]) +
-					 c2 * c2 *  AwBw[0];
+	double in_prev = VV[0] - 
+	                 G  * VD[0] + 
+	                 c2 * VW[0] +
+					 G  * G  * DD[0] - 
+					 G  * c2 * DW[0] +
+					 c2 * c2 * WW[0];
 				   
 	double k = best_scale(profile, params, c1, c2);
 	
@@ -440,12 +422,12 @@ double point_score(struct sxs_profile* profile, struct sxs_opt_params* params, d
 		q_cur = q[i];
 		G = c1_cube * exp(corr*q_cur*q_cur);
 			 
-		in = AvBv[i] -
-		     G  * (AvBd[i] + AdBv[i]) +
-		     c2 * (AvBw[i] + AwBv[i]) +
-			 G * G * AdBd[i] -
-			 G  * c2 * (AdBw[i] + AwBd[i]) +
-			 c2 * c2 * AwBw[i];
+		in = VV[i] -
+		     G  * VD[i] +
+		     c2 * VW[i] +
+			 G * G * DD[i] -
+			 G  * c2 * DW[i] +
+			 c2 * c2 * WW[i];
 			 	
 		tan = (in-in_prev)/(q_cur-q_prev);
 		buf = in - tan * q_cur;
@@ -470,15 +452,12 @@ void spf2cross_terms(struct sxs_profile* profile, struct sxs_spf_full* s)
 	int qnum = profile->qnum;
 	int L = s->L;
 
-	double* AvBv = profile->AvBv;
-	double* AvBd = profile->AvBd;
-	double* AvBw = profile->AvBw;
-	double* AdBv = profile->AdBv;
-	double* AdBd = profile->AdBd;
-	double* AdBw = profile->AdBw;
-	double* AwBv = profile->AwBv;
-	double* AwBd = profile->AwBd;
-	double* AwBw = profile->AwBw;
+	double* VV = profile->VV;
+	double* VD = profile->VD;
+	double* VW = profile->VW;
+	double* DD = profile->DD;
+	double* DW = profile->DW;
+	double* WW = profile->WW;
 	
 	struct sxs_spf_sing** V = s->V;
 	struct sxs_spf_sing** D = s->D;
@@ -486,45 +465,42 @@ void spf2cross_terms(struct sxs_profile* profile, struct sxs_spf_full* s)
 	
 	for (int q = 0; q < qnum; q++) {
 	
-		AvBv[q] = 0.0;
-		AvBd[q] = 0.0;
-		AvBw[q] = 0.0;
-		AdBv[q] = 0.0;
-		AdBd[q] = 0.0;
-		AdBw[q] = 0.0;
-		AwBv[q] = 0.0;
-		AwBd[q] = 0.0;
-		AwBw[q] = 0.0;
+		VV[q] = 0.0;
+		VD[q] = 0.0;
+		VW[q] = 0.0;
+		DD[q] = 0.0;
+		DW[q] = 0.0;
+		WW[q] = 0.0;
 		
 		int id = 0;
 		double val;
 		for (int l = 0; l <= L; l++) {
 			for (int m = -l; m <= l; m++) {
 				val = V[q]->re[id] * V[q]->re[id] + V[q]->im[id] * V[q]->im[id];
-				AvBv[q] += val;
+				VV[q] += val;
 				
 				val = D[q]->re[id] * D[q]->re[id] + D[q]->im[id] * D[q]->im[id];
-				AdBd[q] += val;
+				DD[q] += val;
 				
 				val = W[q]->re[id] * W[q]->re[id] + W[q]->im[id] * W[q]->im[id];
-				AwBw[q] += val;
+				WW[q] += val;
 				
 				val = V[q]->re[id] * D[q]->re[id] + V[q]->im[id] * D[q]->im[id];
-				AvBd[q] += val;
+				VD[q] += val;
 				
 				val = V[q]->re[id] * W[q]->re[id] + V[q]->im[id] * W[q]->im[id];
-				AvBw[q] += val;
+				VW[q] += val;
 				
 				val = D[q]->re[id] * W[q]->re[id] + D[q]->im[id] * W[q]->im[id];
-				AdBw[q] += val;
+				DW[q] += val;
 				
 				id++;
 			}
 		}
 		
-		AdBv[q] = AvBd[q];
-		AwBv[q] = AvBw[q];
-		AwBd[q] = AdBw[q];
+		VD[q] *= 2.0;
+		VW[q] *= 2.0;
+		DW[q] *= 2.0;
 	}
 }
 
