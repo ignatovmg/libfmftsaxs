@@ -1,10 +1,12 @@
-#ifndef _DEFINE_H_
-#define _DEFINE_H_
+/** @file
+ * \brief Constants and flags.
+ */
+#pragma once
 
-#define SQRTPI 	1.77245385091
+#define SQRTPI 1.77245385091
 
 #ifndef M_PI
-	#define M_PI    3.14159265358
+	#define M_PI 3.14159265358
 #endif
 
 #define QMAX 0.5
@@ -22,13 +24,3 @@
 #define C1_DEFAULT 1.0
 #define C2_DEFAULT 0.0
 
-#define SKIP_PROFILES 1
-
-#define RECORD_MANIFOLD_RESULTS 0
-
-#define SAVE_CURVES 0
-#define DIRECT_CURVES_PATH "testing/sandbox/simple"
-#define STORED_CURVES_PATH "testing/sandbox/massha"
-#define CURVES_PARAMS_PATH "testing/sandbox/params"
-
-#endif /* _DEFINE_H_ */

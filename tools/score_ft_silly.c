@@ -1,8 +1,8 @@
-
 #include "common.h"
 
-#include "massha2.h"
+#include "fftsaxs.h"
 #include "index.h"
+#include "saxs_utils.h"
 
 #include "mol2/atom_group.h"
 #include "mol2/pdb.h"
@@ -54,17 +54,33 @@ void euler_rotate_zyz(struct mol_atom_group *pa, double alpha, double beta, doub
 	rotate(pa, 0.0, 0.0, 1.0, alpha);
 }
 
+void print_usage(char *exe_name)
+{
+	fprintf(stderr,
+		  "Usage: %s MAPPING_PRM ATOMPRM FT_PATH RM_PATH "
+		  " REC_PATH LIG_PATH REF_PROFILE L\n",
+		  basename(exe_name));
+
+	exit(EXIT_FAILURE);
+}
+
+
 int main(int argc, char** argv)
 {
-	char* map_path = argv[1];          // for finding atoms in param file
-	char* prm_path = argv[2];          // param file
-	char* rec_path = argv[3];
-	char* lig_path = argv[4];
-	char* exp_path = argv[5];
-	char* eul_path = argv[6];
-	int  L = atoi(argv[7]);
-	int  qnum = 50;
+	char* map_path = argv[1];
+	char* prm_path = argv[2];
+	char* ft_path  = argv[3];
+	char* rm_path  = argv[4];
+	char* rec_path = argv[5];
+	char* lig_path = argv[6];
+	char* exp_path = argv[7];
+	int   L = atoi(argv[8]);
+	char* out_path = argv[9];
+	int   qnum = 50;
 	
+	if (argc != 10) { print_usage("score_ft_silly"); }
+	
+	char eul_path[] = "euler_list";
 	double* qvals = mkarray(0.0, 0.5, qnum); 
 
 	struct mol_prms *prms = mol_prms_read(prm_path);
@@ -94,6 +110,11 @@ int main(int argc, char** argv)
 	mol_atom_group_translate(lig, &com);
 	mol_atom_group_translate(lig_moved, &com);
 	
+	// reference ligand position
+	struct mol_vector3 ref_lig;
+	MOL_VEC_SUB(ref_lig, com, coe);
+	MOL_VEC_MULT_SCALAR(ref_lig, ref_lig, -1.0);
+	
 	// read experiment
 	struct sxs_profile* exp_profile = sxs_profile_read(exp_path);
 	
@@ -105,7 +126,9 @@ int main(int argc, char** argv)
 	
 	struct sxs_profile* profile = sxs_profile_create(qvals, qnum, 1);
 	
-	FILE* euler = myfopen(eul_path, "r");
+	// record and open euler file
+	sxs_ft_file2euler_file(eul_path, ft_path, rm_path, &ref_lig);
+	FILE* euler = sxs_myfopen(eul_path, "r");
 	
 	int nread, eu_id;
 	double z, b1, g1, a2, b2, g2;
@@ -116,74 +139,82 @@ int main(int argc, char** argv)
 	
 	struct sxs_spf_full *coefs = sxs_spf_full_create(L, qnum);
 	
+	// join groups and compute solvent accessibility for each atom
 	struct mol_atom_group *join = mol_atom_group_join(rec_moved, lig_moved);
 	double* saxs_sa = malloc(join->natoms * sizeof(double));
 	faccs(saxs_sa, join, 1.4);
 	mol_atom_group_free(join);
 	
-	FILE* out = fopen("silly_chi_scores", "w");
+	FILE* out = fopen(out_path, "w");
 	
 	clock_t time1, time2;
 	time2 = clock();
+	int iline = 0;
+	
+	printf("Output will be written to %s\n", out_path);
 	
 	while (fscanf(euler, "%d %lf %lf %lf %lf %lf %lf", &eu_id, &z, 
 	             &b1, &g1, &a2, &b2, &g2) != EOF) {
 	        
-	    printf("eu id = %i\n", eu_id);
+	    printf("Processing line %i\n", iline++);
+	        
+	    SXS_PRINTF("euid = %i\n", eu_id);
 		time1 = clock();
 	   
+	    // arrange and join atom groups
 		lig_tv.Z = z;          
-		saxs_fill_active_rotation_matrix(&rec_rm, 0.0, b1, g1);
-		saxs_fill_active_rotation_matrix(&lig_rm,  a2, b2, g2);
+		sxs_fill_active_rotation_matrix(&rec_rm, 0.0, b1, g1);
+		sxs_fill_active_rotation_matrix(&lig_rm,  a2, b2, g2);
 		mol_atom_group_move_in_copy(lig, lig_moved, &lig_rm, &lig_tv);
 		mol_atom_group_move_in_copy(rec, rec_moved, &rec_rm, &rec_tv);
 		
-		printf("\tmove: %.4f\n", (double)(clock()-time1) / CLOCKS_PER_SEC);     
+		SXS_PRINTF("\tmove: %.4f\n", (double)(clock()-time1) / CLOCKS_PER_SEC);     
 		time1 = clock();
 		
 		join = mol_atom_group_join(rec_moved, lig_moved);
 		
-		printf("\tjoin: %.4f\n", (double)(clock()-time1) / CLOCKS_PER_SEC);     
+		SXS_PRINTF("\tjoin: %.4f\n", (double)(clock()-time1) / CLOCKS_PER_SEC);     
 		time1 = clock();
 		
+		// move to the com
 		struct mol_vector3 joincom;
 		centroid(&joincom, join);
 		MOL_VEC_MULT_SCALAR(joincom, joincom, -1.0);
 		mol_atom_group_translate(join, &joincom);
 		
-		printf("\tcntr: %.4f\n", (double)(clock()-time1) / CLOCKS_PER_SEC);     
+		SXS_PRINTF("\tcntr: %.4f\n", (double)(clock()-time1) / CLOCKS_PER_SEC);     
 		time1 = clock();
 		
+		// compute SPF decomposition (see pdb2spf.h)
 		atom_grp2spf_inplace(coefs, join, ff_table, qvals, qnum, L, saxs_sa);
 		
-		printf("\tampl: %.4f\n", (double)(clock()-time1) / CLOCKS_PER_SEC);     
+		SXS_PRINTF("\tampl: %.4f\n", (double)(clock()-time1) / CLOCKS_PER_SEC);     
 		time1 = clock();
 		
 		//sxs_profile_from_spf(profile, coefs, 1.0, 0.0);
+		
+		// assemble and minimize profile
 		spf2fitted_profile(profile, coefs, params);
 		
-		printf("\tfit : %.4f\n", (double)(clock()-time1) / CLOCKS_PER_SEC);     
+		SXS_PRINTF("\tfit : %.4f\n", (double)(clock()-time1) / CLOCKS_PER_SEC);     
 		time1 = clock();
-
-		//sxs_profile_write("fitted_profile_simple", profile);
-		//fprintf(out, "%d\t%.3f\t%.3f\t%.3f\n", eu_id, profile->score, profile->c1, profile->c2);
-		printf("\tchi :%d\t%.3f\t%.3f\t%.3f\n", eu_id, profile->score, profile->c1, profile->c2);
 		
-		//mol_write_pdb("join.pdb", join);
+		SXS_PRINTF("\tchi :%d\t%.3f\t%.3f\t%.3f\n", eu_id, profile->score, profile->c1, profile->c2);
+		fprintf(out, "%d\t%.3f\t%.3f\t%.3f\n", eu_id, profile->score, profile->c1, profile->c2);
+
 		mol_atom_group_free(join);
 		
-		printf("\tfree: %.4f\n", (double)(clock()-time1) / CLOCKS_PER_SEC);     
+		SXS_PRINTF("\tfree: %.4f\n\n", (double)(clock()-time1) / CLOCKS_PER_SEC);     
 		time1 = clock();
-		
-		//exit(0);
-	}
 
-	printf("total elapsed: %.4f\n", (double)(clock()-time2) / CLOCKS_PER_SEC);     
+	}
+	
+	printf("Total time elapsed: %.4f\n", (double)(clock()-time2) / CLOCKS_PER_SEC);     
 
 	fclose(out);
 	fclose(euler);
 	
-	myfree(saxs_sa);
+	sxs_myfree(saxs_sa);
 	mol_prms_free(prms);
 	sxs_spf_full_free(coefs);
 	sxs_profile_free(exp_profile);

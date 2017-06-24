@@ -1,3 +1,6 @@
+/** @file 
+ * This file is copied from libsaxs without modifications.
+ */
 #ifndef _FORM_FACTOR_H_
 #define _FORM_FACTOR_H_
 

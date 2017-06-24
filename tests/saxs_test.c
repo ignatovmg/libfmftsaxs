@@ -4,9 +4,9 @@
 #include "mol2/pdb.h"
 #include "mol2/prms.h"
 #include "pdb2spf.h"
-#include "mpapi2.h"
+#include "profile.h"
 
-#include "massha2.h"
+#include "fftsaxs.h"
 #include "index.h"
 
 #ifdef _MPI_
@@ -33,6 +33,8 @@ static void cmp_profiles(struct sxs_profile* cur_profile, struct sxs_profile* re
 {
 	ck_assert_int_eq(cur_profile->qnum, ref_profile->qnum);
 	int qnum = cur_profile->qnum;
+
+	//sxs_profile_write("../ref_profile", cur_profile);
 
 	double val1, val2;
 	for (int q = 0; q < qnum; q++) {
@@ -120,7 +122,7 @@ START_TEST(test_pdb2spf)
 	mol_prms_free(prms);
 	sxs_spf_full_free(spf_coef_ref);
 	sxs_spf_full_free(spf_coef);
-	free(qvals);
+	sxs_myfree(qvals);
 }
 END_TEST
 
@@ -164,7 +166,7 @@ START_TEST(test_sxs_profile_from_spf)
 	sxs_profile_free(cur_profile);
 	sxs_profile_free(ref_profile);
 	sxs_spf_full_free(spf_coef);
-	free(qvals);
+	sxs_myfree(qvals);
 	mol_atom_group_free(ag);
 	mol_prms_free(prms);
 }
@@ -234,153 +236,120 @@ START_TEST(score_conformations)
 	
 //=================================================================
 //=========================== scoring =============================  
-
-	int znum_proc;
-	int znum_list[nprocs];
 	
-	for (int i = 0; i < nprocs; i++) {
-		znum_list[i] = znum_total / nprocs;
-		
-		if (i < znum_total % nprocs) {
-			znum_list[i]++;
-		}
-	}
-
-	double* z_beg_list = calloc(nprocs, sizeof(double));
-	double* z_end_list = calloc(nprocs, sizeof(double));
-	
-	z_beg_list[0] = z_beg;
-	z_end_list[0] = z_beg + (znum_list[0] - 1) * z_step;
-	for (int i = 1; i < nprocs; i++) {
-		z_beg_list[i] = z_end_list[i-1] + z_step;
-		z_end_list[i] = z_beg_list[i] + (znum_list[i] - 1) * z_step;
+	double* zvals = calloc(znum_total, sizeof(double));
+	int znum = 0;
+	for (double zval = z_beg; zval < (z_end + 0.001); zval += z_step) {     
+		zvals[znum++] = zval;
 	}
 	
-	znum_proc = znum_list[myrank];
-	z_beg = z_beg_list[myrank];
-	z_end = z_end_list[myrank];
-	
 
-	int*      ft_index_glob;
-	double* saxs_score_glob;
-	double*    c1_list_glob;
-	double*    c2_list_glob;   
-	int*       ft_index_loc;   
-	double*  saxs_score_loc;
-	double*     c1_list_loc;
-	double*     c2_list_loc;
+	double* saxs_score;
+	int*    saxs_index; 
+	int*      ft_index;
+	double*    c1_list;
+	double*    c2_list;
 	
-	int*     saxs_index_loc; 
-	int*       rec_num_list; 
-	
-	int ft_num_loc = 0;    
-	int ft_num_glob = 0; 
+	int ft_num = 0;    
 	int ft_id;
 	
 	FILE* euler_file = fopen(eul_path, "r");
-	rec_num_list = calloc(nprocs, sizeof(int));
 	
 	double line[5];
 	double z;
 	while(fscanf(euler_file, "%d %lf %lf %lf %lf %lf %lf", &ft_id, &z, 
 	             &line[0], &line[1], &line[2], &line[3], &line[4]) != EOF)
 	{
-		for (int i = 0; i < nprocs; i++) {
-			if (z >= z_beg_list[i] && z <= z_end_list[i]) {
-				rec_num_list[i]++;
-				ft_num_glob++;
+		for (int j = 0; j < znum; j++) {
+			if (zvals[j] > z - 0.001 && zvals[j] < z + 0.001) {
+				ft_num++;
 			}
 		}
 	}
+	
 	rewind(euler_file);
-	ft_num_loc = rec_num_list[myrank];
 
-	saxs_index_loc = calloc(ft_num_loc, sizeof(int));
-	saxs_score_loc = calloc(ft_num_loc, sizeof(double));
-	ft_index_loc = calloc(ft_num_loc, sizeof(int));
-	c1_list_loc = calloc(ft_num_loc, sizeof(double));
-	c2_list_loc = calloc(ft_num_loc, sizeof(double));
+	saxs_index = calloc(ft_num, sizeof(int));
+	saxs_score = calloc(ft_num, sizeof(double));
+	ft_index = calloc(ft_num, sizeof(int));
+	c1_list = calloc(ft_num, sizeof(double));
+	c2_list = calloc(ft_num, sizeof(double));
 	
 	double b_step = M_PI / L;
 	double a_step = 2.0 * M_PI / (2*L+1);
-	int counter = 0;
 	int tmp, tmp_id;
 	
-	// convert euler coordinates into complex ids in saxs array
-	struct saxs_euler euler;
+	// convert euler coordinates into indices
+	struct sxs_euler euler;
+	int counter = 0;
+	
 	while(fscanf(euler_file, "%d %lf %lf %lf %lf %lf %lf", &ft_id, 
 	             &euler.z,  &euler.b1, &euler.g1, &euler.a2, 
 	             &euler.b2, &euler.g2) != EOF) {
 
-		if (euler.z < z_beg || euler.z > z_end) {
-			continue;
-		}
-		
-		euler.a2 = 2*M_PI - euler.a2;
-		euler.g2 = 2*M_PI - euler.g2;
+		for (int j = 0; j < znum; j++) {
+			if (zvals[j] > euler.z - 0.001 && zvals[j] < euler.z + 0.001) {
+			
+				euler.a2 = 2*M_PI - euler.a2;
+				euler.g2 = 2*M_PI - euler.g2;
+				//euler.g1 = 2*M_PI - euler.g2;
 	
-        tmp_id = (int)(round((euler.z - z_beg) / z_step)) * nbeta;
+				tmp_id = (int)(round((euler.z - z_beg) / z_step)) * nbeta;
 
-        tmp = (int)(round(euler.b1 / b_step));
-        tmp_id = (tmp_id + tmp) * nbeta;
+				tmp = (int)(round(euler.b1 / b_step));
+				tmp_id = (tmp_id + tmp) * nbeta;
 
-        tmp = (int)(round(euler.b2 / b_step));
-        tmp_id = (tmp_id + tmp) * (2*L+1);
+				tmp = (int)(round(euler.b2 / b_step));
+				tmp_id = (tmp_id + tmp) * (2*L+1);
 
-        tmp = (int)(round(euler.a2 / a_step));
-        tmp_id = (tmp_id + tmp) * (2*L+1);
+				tmp = (int)(round(euler.a2 / a_step));
+				tmp_id = (tmp_id + tmp) * (2*L+1);
 
-        tmp = (int)(round(euler.g1 / a_step));
-        tmp_id = (tmp_id + tmp) * (2*L+1);
+				tmp = (int)(round(euler.g1 / a_step));
+				tmp_id = (tmp_id + tmp) * (2*L+1);
 
-        tmp = (int)(round(euler.g2 / a_step));
-        tmp_id = tmp_id + tmp;
+				tmp = (int)(round(euler.g2 / a_step));
+				tmp_id = tmp_id + tmp;
 
-        saxs_index_loc[counter] = tmp_id;
-        ft_index_loc[counter++] = ft_id;
+				saxs_index[counter] = tmp_id;
+				ft_index[counter] = ft_id;
+				counter++;
+			}
+		}
 	}
 	
 	fclose(euler_file);
 	
-	saxs_score_glob  = calloc(ft_num_glob, sizeof(double));
-	ft_index_glob = calloc(ft_num_glob, sizeof(int));
-	c1_list_glob = calloc(ft_num_glob, sizeof(double));
-	c2_list_glob = calloc(ft_num_glob, sizeof(double));
-	
-	compute_saxs_scores(
-		A, B, qvals, qnum, 
-		params,
-		z_beg, z_step, 
-		znum_proc,
-		saxs_score_loc,
-		saxs_index_loc,
-		c1_list_loc,
-		c2_list_loc,
-		ft_num_loc, L);
-		
-	saxs_score_glob = saxs_score_loc;
-	ft_index_glob = ft_index_loc;
-	c1_list_glob = c1_list_loc;
-	c2_list_glob = c2_list_loc;
+	compute_saxs_scores(saxs_score, 
+	                    c1_list,
+	                    c2_list, 
+	                    saxs_index, 
+	                    ft_num, 
+	                    A, B, params, 
+	                    qvals, qnum, 
+	                    zvals, znum, 
+	                    L, 1);
 
-	FILE* ref;
-	ref = fopen(ref_path, "r");
+	FILE* ref = fopen(ref_path, "r");
 	
 	double score, c1, c2;
-	for (int i = 0; i < ft_num_glob; i++) {
-		fscanf(ref, "%d %lf %lf %lf", &ft_id, &score, &c1, &c2);
-		ck_assert_int_eq(ft_id, ft_index_glob[i]);
-		ck_assert_double_eq_tol(score, saxs_score_glob[i], tol1);
-		ck_assert_double_eq_tol(c1, c1_list_glob[i], tol1);
-		ck_assert_double_eq_tol(c2, c2_list_glob[i], tol1);
+	int nread;
+	for (int i = 0; i < ft_num; i++) {
+		nread = fscanf(ref, "%d %lf %lf %lf", &ft_id, &score, &c1, &c2);
+		ck_assert_int_eq(nread, 4);
+		ck_assert_int_eq(ft_id, ft_index[i]);
+		ck_assert_double_eq_tol(score, saxs_score[i], tol1);
+		ck_assert_double_eq_tol(c1, c1_list[i], tol1);
+		ck_assert_double_eq_tol(c2, c2_list[i], tol1);
 	}
 
 	fclose(ref);
 	
-	free(saxs_score_glob);
-	free(ft_index_glob);
-	free(c1_list_glob);
-	free(c2_list_glob);
+	sxs_myfree(saxs_score);
+	sxs_myfree(saxs_index);
+	sxs_myfree(ft_index);
+	sxs_myfree(c1_list);
+	sxs_myfree(c2_list);
 	sxs_opt_params_free(params);
 }
 END_TEST
@@ -416,7 +385,6 @@ START_TEST(minimize_score)
 	spf2fitted_profile(profile, A, params);
 
 	struct sxs_profile* ref_profile = sxs_profile_read(ref_path);
-	
 	cmp_profiles(profile, ref_profile);
 
 	mol_prms_free(prms);
@@ -425,7 +393,7 @@ START_TEST(minimize_score)
 	sxs_profile_free(ref_profile);
 	sxs_opt_params_free(params);
 	mol_atom_group_free(pa);
-	free(ff_table);
+	sxs_myfree(ff_table);
 }
 END_TEST
 

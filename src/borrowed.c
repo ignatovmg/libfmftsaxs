@@ -16,8 +16,6 @@ static int max(int i, int j)
 		return j;
 }
 
-
-
 double* generate_spherical_norm(int N)
 {
 	double *Y_norm;

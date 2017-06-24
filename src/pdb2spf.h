@@ -1,6 +1,13 @@
 /** @file
  * \brief Contains structures and functions for computing 
  * SPF coefficients from atom groups.
+ *
+ * Atom group SAXS intencity can be computed as \f$ 
+ * I(q) = \sum_{l=0}^L \sum_{m=-l}^l {|A_{lm}^{v}(q) - 
+ * G(c_1,q)A_{lm}^{d}(q) + c_2 A_{lm}^{w}(q)|}^2
+ * \f$. This file provides tools to compute and manipulate 
+ * \f$A_{lm}\f$ coefficients.
+ * 
  */
 #pragma once
 
@@ -23,7 +30,8 @@ struct sxs_spf_sing
 };
 
 /**
- * Stores SPF coefficients for the entire scattering curve.
+ * Stores SPF coefficients \f$A_{lm}^{v}(q), A_{lm}^{d}(q), A_{lm}^{w}(q)\f$ 
+ * for the entire scattering curve.
  */
 struct sxs_spf_full 
 {
@@ -31,9 +39,12 @@ struct sxs_spf_full
 	int qnum;         /**< Number of q values */
 	double rm;        /**< Molecule mean radius */
 	
-	struct sxs_spf_sing** V;   /**< Vacuum part: \f$A_{lm}^{v} = 4\pi i^{l} \sum_{i} f_{i}^{v}(q) j_l(qr_i) Y_{lm}(\omega)\f$ */
-	struct sxs_spf_sing** D;   /**< Dummy part:  \f$A_{lm}^{d} = 4\pi i^{l} \sum_{i} f_{i}^{d}(q) j_l(qr_i) Y_{lm}(\omega)\f$ */
-	struct sxs_spf_sing** W;   /**< Water part:  \f$A_{lm}^{w} = 4\pi i^{l} \sum_{i} SASA_i f^{w}(q) j_l(qr_i) Y_{lm}(\omega)\f$ */
+	struct sxs_spf_sing** V;   /**< Vacuum part: \f$A_{lm}^{v}(q) = 4\pi i^{l} 
+	                                \sum_{i} f_{i}^{v}(q) j_l(qr_i) Y_{lm}(\omega)\f$ */
+	struct sxs_spf_sing** D;   /**< Dummy part:  \f$A_{lm}^{d}(q) = 4\pi i^{l} 
+	                                \sum_{i} f_{i}^{d}(q) j_l(qr_i) Y_{lm}(\omega)\f$ */
+	struct sxs_spf_sing** W;   /**< Water part:  \f$A_{lm}^{w}(q) = 4\pi i^{l} 
+	                                \sum_{i} SASA_i f^{w}(q) j_l(qr_i) Y_{lm}(\omega)\f$ */
 };
 
 /**
@@ -43,7 +54,8 @@ struct sxs_spf_full
  * @param[in] qvals    Array with q values.
  * @param     qnum     `qvals` length.
  * @param     L        Expansion depth.
- * @param     water    If equal to 1, sxs_spf_full::W is computed, otherwise is set to zeros.
+ * @param     water    If equal to 1, sxs_spf_full::W is computed, 
+ * otherwise is set to zeros.
  * @return SPF coefficients for all q.
  */
 struct sxs_spf_full* atom_grp2spf(

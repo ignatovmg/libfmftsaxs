@@ -15,10 +15,10 @@
 
 #include "common.h"
 
-#include "mpapi2.h"
+#include "profile.h"
 #include "pdb2spf.h"
 
-#include "../lbfgsb/src/lbfgsb.h"
+#include "lbfgsb.h"
 
 /**
  * \brief This structure stores the parameters for L-BFGS-B library
@@ -29,15 +29,15 @@ struct sxs_opt_params
 	double rm;            /**< Mean atomic radius. */
 	double mult;          /**< \f$ \left(\frac{4\pi}{3}\right)^\frac{3}{2} r_m^2 \f$. */
 	double peak;          /**< Peak intencity value of experimental profile. Can be used for initial 
-	                           scaling. */
-	
+		                       scaling. */
+
 	double* a;            /**< Compressed form of experimental profile. */
-	
-    double  wa[43251];    /**< L-BFGS-B library internal workspace. */   
-    integer iwa[3072];    /**< L-BFGS-B library internal workspace. */   
-    double  dsave[29];    /**< L-BFGS-B library internal workspace. */   
-    integer isave[44];    /**< L-BFGS-B library internal workspace. */   
-    logical lsave[4];     /**< L-BFGS-B library internal workspace. */   
+
+	double  wa[43251];    /**< L-BFGS-B library internal workspace. */   
+	integer iwa[3072];    /**< L-BFGS-B library internal workspace. */   
+	double  dsave[29];    /**< L-BFGS-B library internal workspace. */   
+	integer isave[44];    /**< L-BFGS-B library internal workspace. */   
+	logical lsave[4];     /**< L-BFGS-B library internal workspace. */   
 };
 
 /**

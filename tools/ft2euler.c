@@ -9,11 +9,11 @@
 
 int main(int argc, char** argv)
 {
-	char* eu_path = argv[1];
-	char* ft_path = argv[2];
-	char* rm_path = argv[3];
-	char* rec_path = argv[4];
-	char* lig_path = argv[5];
+	char* ft_path = argv[1];
+	char* rm_path = argv[2];
+	char* rec_path = argv[3];
+	char* lig_path = argv[4];
+	char* eu_path = argv[5];
 
 	struct mol_atom_group* rec = mol_read_pdb(rec_path);
 	struct mol_atom_group* lig = mol_read_pdb(lig_path);
@@ -30,7 +30,7 @@ int main(int argc, char** argv)
 	mol_atom_group_free(rec);
 	mol_atom_group_free(lig);
 
-	saxs_ft_file2euler_file (eu_path, ft_path, rm_path, &ref_lig);
+	sxs_ft_file2euler_file (eu_path, ft_path, rm_path, &ref_lig);
 
 	return 0;
 }

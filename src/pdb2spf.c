@@ -195,14 +195,14 @@ void sxs_spf_sing_init(struct sxs_spf_sing* s, int L)
 void sxs_spf_sing_free(struct sxs_spf_sing* s)
 {
 	sxs_spf_sing_destroy(s);
-	myfree(s);
+	sxs_myfree(s);
 }
 
 void sxs_spf_sing_destroy(struct sxs_spf_sing* s)
 {
 	if (s != NULL) {
-		myfree(s->re);
-		myfree(s->im);
+		sxs_myfree(s->re);
+		sxs_myfree(s->im);
 	}
 }
 
@@ -235,7 +235,7 @@ void sxs_spf_full_init(struct sxs_spf_full* s, int L, int qnum)
 void sxs_spf_full_free(struct sxs_spf_full* s) 
 {
 	sxs_spf_full_destroy(s);
-	myfree(s);
+	sxs_myfree(s);
 }
 
 void sxs_spf_full_destroy(struct sxs_spf_full* s) 

@@ -1,3 +1,6 @@
+/** @file
+ * \brief Common headers and functions needed throughout the library.
+ */
 #pragma once
 
 #include <assert.h>
@@ -26,19 +29,29 @@
 	}                                                        \
 };
 
+#ifdef _SXS_VERBOSE_
+	#define SXS_PRINTF(format, ...) {                        \
+		printf(format, ##__VA_ARGS__);                       \
+	};
+#else
+	#define SXS_PRINTF(format, ...) 
+#endif
+
+/**
+ * Used to index \f$A_{lm}\f$ in various data structures
+ */
 static inline int lm_index(int l, int m) {
 	return l * (l + 1) + m;
 }
 
-static inline void myfree(void* ptr) 
+static inline void sxs_myfree(void* ptr) 
 {
 	if (ptr != NULL) {
 		free(ptr);
-		ptr = NULL;
 	}
 }
 
-static inline FILE* myfopen(char* path, char* mode)
+static inline FILE* sxs_myfopen(char* path, char* mode)
 {
 	FILE* f = fopen(path, mode);
 	

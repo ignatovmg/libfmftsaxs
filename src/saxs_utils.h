@@ -1,4 +1,6 @@
-/** @file \brief asdf
+/** @file 
+ * \brief Some useful functions. Most of them are copied from
+ * libsaxs.
  */
 #pragma once
 
@@ -9,33 +11,50 @@
 #include "mol2/transform.h"
 
 #ifndef min
-#define min(a,b)				\
+#define min(a,b)				    \
 	({ __typeof__ (a) _a = (a);		\
 		__typeof__ (b) _b = (b);	\
 		_a < _b ? _a : _b; })
 #endif
 
 #ifndef max
-#define max(a,b)				\
+#define max(a,b)				    \
 	({ __typeof__ (a) _a = (a);		\
 		__typeof__ (b) _b = (b);	\
 		_a > _b ? _a : _b; })
 #endif
 
-typedef struct dec_ftresult_t
-{
-	struct ftresult *res;
-	double rgyr;
-	double chi;
-	int rank;
-} dec_ftresult;
-
 double mol_atom_group_max_dist(const struct mol_atom_group *ag);
 
 double mol_atom_group_average_radius(const struct mol_atom_group *ag);
 
+/** 
+ * Create array uniformly sampled array
+ * from `begin` to `end`.
+ * @param begin Start array.
+ * @param end   End array.
+ * @param qnum  Array length.
+ * @return Array.
+ */
 double* mkarray(double begin, double end, int qnum);
 
+/**
+ * Create rotation matrix from Euler angles \f$(\alpha, \beta, \gamma)\f$.
+ * @param rm Rotation matrix.
+ * @param alpha Alpha angle.
+ * @param beta Beta angle.
+ * @param gamma Gamma angle.
+ */
+void sxs_fill_active_rotation_matrix(struct mol_matrix3 *rm, double alpha, double beta, double gamma);
+
+/**
+ * Multipy rottion matrices c = a*b.
+ */
+void sxs_mult_rot_mats(struct mol_matrix3 *c, struct mol_matrix3 *a, struct mol_matrix3 *b);
+
+/**
+ * Fill solvent accessibility for each atom.
+ */
 void faccs(
 	double *fractional_sa,
 	const struct mol_atom_group *ag,

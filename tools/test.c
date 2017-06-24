@@ -7,7 +7,7 @@
 #include "saxs_utils.h"
 #include "form_factor_table.h"
 #include "pdb2spf.h"
-#include "mpapi2.h"
+#include "fftsaxs.h"
 #include "min_saxs.h"
 
 #include <gmp.h>

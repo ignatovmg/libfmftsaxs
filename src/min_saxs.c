@@ -126,7 +126,7 @@ void sxs_opt_params_init(struct sxs_opt_params* params, struct sxs_profile* exp,
 void sxs_opt_params_destroy(struct sxs_opt_params* params)
 {
 	if (params != NULL) {
-		myfree(params->a);
+		sxs_myfree(params->a);
 		params->a = NULL;
 	
 		double*  wa    = params->wa;
@@ -146,7 +146,7 @@ void sxs_opt_params_destroy(struct sxs_opt_params* params)
 void sxs_opt_params_free(struct sxs_opt_params* params)
 {
 	sxs_opt_params_destroy(params);
-	myfree(params);
+	sxs_myfree(params);
 }
 
 

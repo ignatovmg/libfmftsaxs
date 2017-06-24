@@ -13,9 +13,6 @@ project(mfftsaxs
   VERSION ${libmfftsaxs_version})
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
-#link_directories($ENV{HOME}/Projects/DOCK/libmfft/build/lib)
-#include_directories($ENV{HOME}/Projects/DOCK/libmfft/build/include)
-
 #################
 # BUILD OPTIONS #
 #################
@@ -24,9 +21,10 @@ option( BUILD_SHARED_LIBS  "Build Shared Library (OFF for Static)" OFF )
 option( PROFILE            "Generate profiling information"        OFF )
 option( BUILD_TESTS        "Build tests"                           ON  )
 option( BUILD_DOCS         "Create and install the HTML based 
-                            API documentation (requires Doxygen)"  ON  )
+                            API documentation (requires Doxygen)"  OFF )
 option( USE_LTO            "Use Link Time Optimization"            ON  )
-option( MPI                "Message passing interface"             OFF  )
+option( MPI                "Message passing interface"             OFF )
+option( VERBOSE            "Verbosity"                             OFF )
 
 # Default installation directory is set to $HOME
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
@@ -50,6 +48,10 @@ endif()
 if (MPI)
   add_definitions(-D_MPI_)
   set(CMAKE_C_COMPILER mpicc)
+endif ()
+
+if (VERBOSE)
+  add_definitions(-D_SXS_VERBOSE_)
 endif ()
 
 set(CMAKE_C_FLAGS
@@ -91,7 +93,7 @@ file(GLOB LIBLBFGSB_SOURCES
     lbfgsb/src/linpack.c
     lbfgsb/src/miniCBLAS.c
     lbfgsb/src/timer.c)
-file(GLOB LIBLBFGSB_HEADERS lbfgsb/src/lbfgsb.h)
+file(GLOB LIBLBFGSB_PUBLIC_HEADERS lbfgsb/src/lbfgsb.h)
 
 file(GLOB LIBMFFTSAXS_SOURCES src/*.c)
 file(GLOB LIBMFFTSAXS_PUBLIC_HEADERS src/*.h )
@@ -113,18 +115,17 @@ set(LIB_INSTALL_DIR     "lib"                        CACHE PATH "Where to instal
 set(INCLUDE_INSTALL_DIR "include"                    CACHE PATH "Where to install headers to.")
 set(CONFIG_INSTALL_DIR  "lib/cmake/${PROJECT_NAME}"  CACHE PATH "Where to install configs to.")
 
-add_library(lbfgsb ${LIBLBFGSB_SOURCES})
-target_link_libraries(lbfgsb gsl gslcblas m)
+add_library(lbfgsb OBJECT ${LIBLBFGSB_SOURCES})
 
-add_library(mfftsaxs ${LIBMFFTSAXS_SOURCES})
-target_link_libraries(mfftsaxs lbfgsb fftw3 mol2 gmp check rt m)
+add_library(mfftsaxs ${LIBMFFTSAXS_SOURCES} $<TARGET_OBJECTS:lbfgsb>)
+target_link_libraries(mfftsaxs fftw3 mol2 gmp check rt m)
 target_include_directories(mfftsaxs
   PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
+    "$<BUILD_INTERFACE:${CMAKE_HOME_DIRECTORY}/lbfgsb/src>"
     "$<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>")
-  #PRIVATE
-  #  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lbfgsb/src>")
-set_target_properties(mfftsaxs PROPERTIES PUBLIC_HEADER "${LIBMFFTSAXS_PUBLIC_HEADERS}")
+    
+set_target_properties(mfftsaxs PROPERTIES PUBLIC_HEADER "${LIBMFFTSAXS_PUBLIC_HEADERS};${LIBLBFGSB_PUBLIC_HEADERS}")
 set_target_properties(mfftsaxs PROPERTIES VERSION "${libmfftsaxs_version}")
 
 if (MPI)
@@ -147,7 +148,7 @@ add_subdirectory(tools)
 ############
 # INSTALL  #
 ############
-install(TARGETS                   mfftsaxs
+install(TARGETS               mfftsaxs
 	EXPORT                    mfftsaxsTargets
 	LIBRARY DESTINATION       "${LIB_INSTALL_DIR}"
 	ARCHIVE DESTINATION       "${LIB_INSTALL_DIR}"
