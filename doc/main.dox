@@ -1,6 +1,6 @@
 /** @mainpage Main page
 *
-* @authors Mikhail Ignatov
+* @authors Mikhail Ignatov, Andrey Kazennov, Dima Kozakov.
 *
 * @section intro Introduction
 * Library provides API and tools for FFT SAXS calculation.
@@ -8,21 +8,10 @@
 * So far it can do: 
 * - Calculate SAXS curves from pdb in CRYSOL fashion
 * - Score multiple dimer conformations via FFT
-* - Minimize SAXS-score with respect to parameters c1, c2.
+* - Minimize SAXS-score with respect to parameters c1, c2
 *
 * If using the code in this package as an example - please modify the comments
 * as appropriate for your own specific code.
-*
-* <hr>
-* @section notes release.notes
-* release.notes
-* <hr>
-* @section requirements requirements
-* @verbinclude requirements
-* <hr> 
-* @todo [optionally include text about more work to be done]
-* @todo Give each todo item its own line
-*
 */
 
 

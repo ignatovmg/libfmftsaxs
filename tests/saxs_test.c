@@ -34,8 +34,6 @@ static void cmp_profiles(struct sxs_profile* cur_profile, struct sxs_profile* re
 	ck_assert_int_eq(cur_profile->qnum, ref_profile->qnum);
 	int qnum = cur_profile->qnum;
 
-	//sxs_profile_write("../ref_profile", cur_profile);
-
 	double val1, val2;
 	for (int q = 0; q < qnum; q++) {
 		//printf("% .4f ^ % .4f, % .3f ^ % .3f, % .3f ^ % .3f\n", 
@@ -83,6 +81,8 @@ START_TEST(test_pdb2spf)
 	
 	struct sxs_spf_full* spf_coef = atom_grp2spf(ag, ff_table, qvals, qnum, L, 1);
 	ck_assert_ptr_nonnull(spf_coef);
+	
+	sxs_spf_full_write("../ref_spf", spf_coef);
 	
 	struct sxs_spf_full* spf_coef_ref = sxs_spf_full_read("ref_spf");
 	ck_assert_ptr_nonnull(spf_coef_ref);
@@ -156,6 +156,8 @@ START_TEST(test_sxs_profile_from_spf)
 	ck_assert_ptr_nonnull(cur_profile);
 	
 	sxs_profile_from_spf(cur_profile, spf_coef, 1.0, 1.0);
+	
+	sxs_profile_write("../ref_profile", cur_profile);
 	
 	struct sxs_profile* ref_profile = sxs_profile_read("ref_profile");
 	ck_assert_ptr_nonnull(ref_profile);
@@ -330,6 +332,12 @@ START_TEST(score_conformations)
 	                    zvals, znum, 
 	                    L, 1);
 
+	FILE* refff = fopen("../ref_chi", "w");
+	for (int i = 0; i < ft_num; i++) {
+		fprintf(refff, "%d\t%.3lf\t%.3lf\t%.3lf\n", ft_index[i], saxs_score[i], c1_list[i], c2_list[i]);
+	}
+	fclose(refff);
+
 	FILE* ref = fopen(ref_path, "r");
 	
 	double score, c1, c2;
@@ -383,6 +391,7 @@ START_TEST(minimize_score)
 	
 	struct sxs_profile* profile = sxs_profile_create(qvals, qnum, 1);
 	spf2fitted_profile(profile, A, params);
+	sxs_profile_write("../ref_fitted_profile", profile);
 
 	struct sxs_profile* ref_profile = sxs_profile_read(ref_path);
 	cmp_profiles(profile, ref_profile);

@@ -1,5 +1,6 @@
 /** @file 
  * This file is copied from libsaxs without modifications.
+ * Here HEAVY_ATOM_SIZE changed from 44 to 43, it was a bug probably.
  */
 #ifndef _FORM_FACTOR_H_
 #define _FORM_FACTOR_H_
@@ -26,7 +27,7 @@ enum saxs_ff_type
 	Ni, Cu, Zn, Se, Br, // line 4 (11)
 	Io, Ir, Pt, Au, Hg, SINGLE_ATOM_SIZE = 34,
 	CH=34, CH2=35, CH3=36, NH=37, NH2=38, NH3=39, OH=40, s_OH2=41, SH=42, PO4=43,
-	HEAVY_ATOM_SIZE=44, s_UNK=99
+	HEAVY_ATOM_SIZE=43, s_UNK=99
 };
 
 // f[q] = c + (sum_i a_i*e^(-b_i*q(q^2)))

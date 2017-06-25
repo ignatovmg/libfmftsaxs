@@ -72,5 +72,5 @@ int main(int argc, char** argv)
 	sxs_profile_free(profile);
 	sxs_spf_full_free(spf);
 	
-	return 0;
+	return EXIT_SUCCESS;
 }

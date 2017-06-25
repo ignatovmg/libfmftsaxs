@@ -6,9 +6,6 @@ target_link_libraries(ft2euler mfftsaxs)
 add_executable(correlate correlate.c)
 target_link_libraries(correlate mfftsaxs)
 
-add_executable(mytest test.c)
-target_link_libraries(mytest mfftsaxs)
-
 add_executable(score_ft_silly score_ft_silly.c)
 target_link_libraries(score_ft_silly mfftsaxs)
 

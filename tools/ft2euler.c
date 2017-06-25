@@ -32,5 +32,5 @@ int main(int argc, char** argv)
 
 	sxs_ft_file2euler_file (eu_path, ft_path, rm_path, &ref_lig);
 
-	return 0;
+	return EXIT_SUCCESS;
 }

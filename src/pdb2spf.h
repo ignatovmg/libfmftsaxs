@@ -19,7 +19,7 @@
 #include "sfbessel.h"
 
 /**
- * Stores SPF coefficients \f$A_{lm}\f$ for a single q value.
+ * \brief Stores SPF coefficients \f$A_{lm}\f$ for a single q value.
  * Contains \f$(L+1)^2\f$ coefficients in total of maximum order \f$L\f$
  */
 struct sxs_spf_sing 
@@ -30,7 +30,7 @@ struct sxs_spf_sing
 };
 
 /**
- * Stores SPF coefficients \f$A_{lm}^{v}(q), A_{lm}^{d}(q), A_{lm}^{w}(q)\f$ 
+ * \brief Stores SPF coefficients \f$A_{lm}^{v}(q), A_{lm}^{d}(q), A_{lm}^{w}(q)\f$ 
  * for the entire scattering curve.
  */
 struct sxs_spf_full 

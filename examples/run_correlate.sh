@@ -10,7 +10,7 @@ lmax=15
 c1=1.0
 c2=1.0
 
-pdbdir=others_example
+pdbdir=1a2k
 
 rec=${pdbdir}/1a2k_r_u_nmin.pdb
 lig=${pdbdir}/1a2k_l_u_nmin.pdb

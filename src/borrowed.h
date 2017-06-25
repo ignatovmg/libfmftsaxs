@@ -1,5 +1,6 @@
 /** @file
- * \brief These functions are borrowed from libfmft. They compute things related to SPF.
+ * \brief These functions are borrowed from libfmft. 
+ * They compute things related to the spherical space.
  */
 #pragma once
 

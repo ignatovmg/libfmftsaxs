@@ -224,5 +224,5 @@ int main(int argc, char** argv)
 	mol_atom_group_free(lig);
 	free(ff_table);	
 
-	return 0;
+	return EXIT_SUCCESS;
 }

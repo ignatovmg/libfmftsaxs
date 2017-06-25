@@ -45,17 +45,17 @@ Most scripts generally start from specifing mapping file and parameter file, whe
 
 3. Converting FT-file to Euler angles.
    `run_ft2euler.sh` converts ft-file from Cartesian to Euler coordinates and writes it into `euler_list` in the form:
-| ligand translation | $$\beta_{rec}$$ | $$\gamma_{rec}$$ | $$\alpha_{lig}$$ | $$\beta_{lig}$$ | $$\gamma_{lig}$$ |.
+| $z$ | $\beta_{rec}$ | $\gamma_{rec}$ | $\alpha_{lig}$ | $\beta_{lig}$ | $\gamma_{lig}$ |. This means, that receptor is rotated by $(0.0, \beta_{rec}, \gamma_{rec})$ and ligand is rotated by $(\alpha_{lig}, \beta_{lig}, \gamma_{lig})$ and translated along z-axis by $z$.
 
 4. Ultra-fast FFT-SAXS scoring.
-   `run_correlate.sh` pdemonstrates the main feature of this library. It uses the protein complex from `others_example` with the PDB code *1a2k*. First SAXS curve is calculated for the native conformation of the dimer for a chosen pair of parameters **c1**, **c2** (1.0, 1.0 by default). Then we pretend, that this curve is experimental and feed it to the executable `correlate` together with the 3 ft-files, which in total contain 210000 conformations. The ft-files are concatenated and fed to `correlate` as a single list. It uses FFT to score the conformations in super-fast fashion and provides a happy user with the output of the form | Serial number | FT index | SAXS-score | c1 | c2 |, which is then sorted by the serial number (line index in the concatenated list) and split into three lists with SAXS-scores, each of which corresponds to the one of the ft-files. 
+   `run_correlate.sh` demonstrates the main feature of this library. It uses the protein complex `1a2k`. First SAXS curve is calculated for the native conformation of the dimer for a chosen pair of parameters **c1**, **c2** (1.0, 1.0 by default). Then we pretend, that this curve is experimental and feed it to the executable `correlate` together with the 3 ft-files, which in total contain 210000 conformations. The ft-files are concatenated and fed to `correlate` as a single list. It uses FFT to score the conformations in super-fast fashion and provides a happy user with the output of the form | Serial number | FT index | SAXS-score | c1 | c2 |, which is then sorted by the serial number (line index in the concatenated list) and split into three lists with SAXS-scores, each of which corresponds to the one of the ft-files. 
 By default the utility `correlate` is launched with `mpirun`, but you can use the serial version, if you did not specify MPI flag during the compilation (which will make it proportinally slower).
 
 You can `plot_curves.py` to build as many curves as you want of a single plot just like this: 
 ```bash 
 $ python plot_curves.py curve1 curve2 ... 
 ```
-It also computes $$\chi$$-score between every pair of them.
+It also computes $\chi$-score between every pair of them.
 
 ---
 ## License ##
@@ -67,4 +67,8 @@ Mikhail Ignatov, Andrey Kazennov and Dima Kozakov.
 
 ---
 ## References ##
+1. Svergun, D., C. Barberato, and M. H. J. Koch. "CRYSOL - a Program to Evaluate X-ray Solution Scattering of Biological Macromolecules from Atomic Coordinates." Journal of Applied Crystallography 28.6 (1995): 768-73. Web.
+2. Konarev, P. V., M. V. Petoukhov, and D. I. Svergun. "MASSHA - a Graphics System for Rigid-body Modelling of Macromolecular Complexes against Solution Scattering Data." Journal of Applied Crystallography 34.4 (2001): 527-32. Web.
+3. Xia, Bing, Artem Mamonov, Seppe Leysen, Karen N. Allen, Sergei V. Strelkov, Ioannis Ch. Paschalidis, Sandor Vajda, and Dima Kozakov. "Accounting for Observed Small Angle X-ray Scattering Profile in the Protein-protein Docking Server Cluspro." Journal of Computational Chemistry 36.20 (2015): 1568-572. Web.
+
 

@@ -11,7 +11,7 @@
  * \brief This structure stores SAXS curve. In the case of a dimer
  * it can contain Euler coordinates of subunits, together with 
  * fitting parameters to the experimental curve. If dimer profile is
- * computed using FFT, 9 partial cross-terms are filled first and 
+ * computed using FFT, 6 partial cross-terms are filled first and 
  * then intencity is compiled, after fitting the parameters 
  * \f$c_1\f$ and \f$c_2\f$ (see massha2.h for details).
  */
