@@ -8,7 +8,7 @@ set(libfmftsaxs_version_patch 0)
 set(libfmftsaxs_version
   "${libfmftsaxs_version_major}.${libfmftsaxs_version_minor}.${libfmftsaxs_version_patch}")
 
-project(mfftsaxs
+project(fmftsaxs
   LANGUAGES C
   VERSION ${libfmftsaxs_version})
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
@@ -117,28 +117,28 @@ set(CONFIG_INSTALL_DIR  "lib/cmake/${PROJECT_NAME}"  CACHE PATH "Where to instal
 
 add_library(lbfgsb OBJECT ${LIBLBFGSB_SOURCES})
 
-add_library(mfftsaxs ${libfmftsaxs_SOURCES} $<TARGET_OBJECTS:lbfgsb>)
-target_link_libraries(mfftsaxs fftw3 mol2 gmp check rt m)
-target_include_directories(mfftsaxs
+add_library(fmftsaxs ${libfmftsaxs_SOURCES} $<TARGET_OBJECTS:lbfgsb>)
+target_link_libraries(fmftsaxs fftw3 mol2 gmp check rt m)
+target_include_directories(fmftsaxs
   PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
     "$<BUILD_INTERFACE:${CMAKE_HOME_DIRECTORY}/lbfgsb/src>"
     "$<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>")
     
-set_target_properties(mfftsaxs PROPERTIES PUBLIC_HEADER "${libfmftsaxs_PUBLIC_HEADERS};${LIBLBFGSB_PUBLIC_HEADERS}")
-set_target_properties(mfftsaxs PROPERTIES VERSION "${libfmftsaxs_version}")
+set_target_properties(fmftsaxs PROPERTIES PUBLIC_HEADER "${libfmftsaxs_PUBLIC_HEADERS};${LIBLBFGSB_PUBLIC_HEADERS}")
+set_target_properties(fmftsaxs PROPERTIES VERSION "${libfmftsaxs_version}")
 
 if (MPI)
-  target_include_directories(mfftsaxs 
+  target_include_directories(fmftsaxs 
 				PUBLIC 
 				"$<BUILD_INTERFACE:${MPI_INCLUDE_PATH}>")
   if(MPI_COMPILE_FLAGS)
-    set_target_properties(mfftsaxs
+    set_target_properties(fmftsaxs
 				PROPERTIES COMPILE_FLAGS "${MPI_COMPILE_FLAGS}")
   endif()
 
   if(MPI_LINK_FLAGS)
-    set_target_properties(mfftsaxs 
+    set_target_properties(fmftsaxs 
 				PROPERTIES LINK_FLAGS "${MPI_LINK_FLAGS}")
   endif()
 endif ()
@@ -148,31 +148,31 @@ add_subdirectory(tools)
 ############
 # INSTALL  #
 ############
-install(TARGETS               mfftsaxs
-	EXPORT                    mfftsaxsTargets
+install(TARGETS               fmftsaxs
+	EXPORT                    fmftsaxsTargets
 	LIBRARY DESTINATION       "${LIB_INSTALL_DIR}"
 	ARCHIVE DESTINATION       "${LIB_INSTALL_DIR}"
-	PUBLIC_HEADER DESTINATION "${INCLUDE_INSTALL_DIR}/mfftsaxs")
+	PUBLIC_HEADER DESTINATION "${INCLUDE_INSTALL_DIR}/fmftsaxs")
 
 ############
 #  CONFIG  #
 ############
 include(CMakePackageConfigHelpers)
-write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/mfftsaxs/mfftsaxsConfigVersion.cmake
+write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/fmftsaxs/fmftsaxsConfigVersion.cmake
                                  VERSION       ${libfmftsaxs_version}
                                  COMPATIBILITY AnyNewerVersion)
 
-configure_package_config_file(cmake/mfftsaxsConfig.cmake.in
-                              ${CMAKE_CURRENT_BINARY_DIR}/mfftsaxs/mfftsaxsConfig.cmake
+configure_package_config_file(cmake/fmftsaxsConfig.cmake.in
+                              ${CMAKE_CURRENT_BINARY_DIR}/fmftsaxs/fmftsaxsConfig.cmake
                               INSTALL_DESTINATION "${CONFIG_INSTALL_DIR}")
 
 install(FILES
-  ${CMAKE_CURRENT_BINARY_DIR}/mfftsaxs/mfftsaxsConfig.cmake
-  ${CMAKE_CURRENT_BINARY_DIR}/mfftsaxs/mfftsaxsConfigVersion.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/fmftsaxs/fmftsaxsConfig.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/fmftsaxs/fmftsaxsConfigVersion.cmake
   DESTINATION ${CONFIG_INSTALL_DIR})
 
-install(EXPORT mfftsaxsTargets
-  FILE mfftsaxsTargets.cmake
+install(EXPORT fmftsaxsTargets
+  FILE fmftsaxsTargets.cmake
   DESTINATION ${CONFIG_INSTALL_DIR})
 
 #################
@@ -191,7 +191,7 @@ if(BUILD_DOCS)
     #set install dirs
     set(DOC_INSTALL_DIR	"doc" CACHE PATH "Where to install docs to.")
     install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/doc/" 
-  	    DESTINATION "${DOC_INSTALL_DIR}/mfftsaxs")
+  	    DESTINATION "${DOC_INSTALL_DIR}/fmftsaxs")
   else()
     message("Could not find Doxygen.")
   endif(DOXYGEN_FOUND)

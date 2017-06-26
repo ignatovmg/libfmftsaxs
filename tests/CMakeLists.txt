@@ -19,7 +19,7 @@ endforeach()
 foreach(test ${tests})
   add_executable(${test} ${test}.c)
   target_link_libraries(${test}
-    mfftsaxs
+    fmftsaxs
     ${MOL2_LIBRARIES}
     ${CHECK_LIBRARIES}
     fftw3f
