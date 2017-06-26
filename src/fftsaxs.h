@@ -23,6 +23,10 @@
  * T^{|m|}_{ll_1}(qz) = \sum_{p = |l_1 - l|}^{l_1 + l} (-1)^m j_p(q z) d_{l m}(l_1, p)
  * \f]
  */
+ 
+/** \addtogroup sph_interface
+ * @{
+ */
 #pragma once
 
 #include "common.h"
@@ -88,7 +92,7 @@
  * @param[in] skip If `skip=1`, then only those scores are computed,
  * which are provided in the `index_list`.
  */ 
-void compute_saxs_scores(
+void sxs_compute_saxs_scores(
 	double* scores_list,
 	double*     c1_list,
 	double*     c2_list,
@@ -129,4 +133,5 @@ struct trig_tab
 	double *beta_sin;
 };*/
 
+/** @} */
 

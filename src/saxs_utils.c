@@ -27,7 +27,7 @@ double mol_atom_group_average_radius(const struct mol_atom_group *ag)
 	return av_r / ag->natoms;
 }
 
-void faccs(
+void sxs_faccs(
 	double *fractional_sa,
 	const struct mol_atom_group *ag,
 	double r_solv)
@@ -47,15 +47,7 @@ void faccs(
 	}
 }
 
-void upcase(char *s)
-{
-	while(*s) {
-		*s = toupper(*s);
-		s++;
-	}
-}
-
-double* mkarray(double begin, double end, int qnum)
+double* sxs_mkarray(double begin, double end, int qnum)
 {
 	if (begin > end || begin < 0 || end < 0)
 	{

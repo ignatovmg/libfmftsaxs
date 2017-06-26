@@ -1,6 +1,11 @@
 /** @file 
  * \brief Contains basic functions to operate with SAXS profile.
  */
+ 
+/** \defgroup profile_interface SAXS profile interface
+ *  \brief Functions and structures working with SAXS profiles.
+ *  @{
+ */
 #pragma once
 
 #include "common.h"
@@ -114,5 +119,5 @@ struct sxs_profile* sxs_profile_fread(FILE* f);
  */
 void sxs_profile_from_spf(struct sxs_profile* profile, struct sxs_spf_full* spf, double c1, double c2);
 
-
+/** @}*/
 

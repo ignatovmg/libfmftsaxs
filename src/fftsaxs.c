@@ -115,7 +115,7 @@ static void besselj_n(double* bessel, double zval, double* qvals, int qnum, int 
 	for (int q = 0; q < qnum; q++) {
 		qval = qvals[q];
 		for (int p = 0; p < 2*L+1; p++) {
-			bessel[q * (2*L+1) + p] = sf_bessel(p, zval * qval);
+			bessel[q * (2*L+1) + p] = sxs_sbessel(p, zval * qval);
 		}
 	}
 }
@@ -600,7 +600,7 @@ static void simple_ft(
 	free(exp_im);
 }
 
-void compute_saxs_scores(
+void sxs_compute_saxs_scores(
 	double* scores_list,
 	double*     c1_list,
 	double*     c2_list,

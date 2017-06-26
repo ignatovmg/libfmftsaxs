@@ -237,7 +237,7 @@ void sxs_lbfgs_fitting(struct sxs_profile* profile, struct sxs_opt_params* param
 
 		if ( IS_FG(*task) ) {
 
-		    profile->scale = best_scale(profile, params, x[0], x[1]);
+		    profile->scale = sxs_best_scale(profile, params, x[0], x[1]);
 		    gradient(g, &score, x, profile, params);
 		    
 		    goto L111;
@@ -248,17 +248,17 @@ void sxs_lbfgs_fitting(struct sxs_profile* profile, struct sxs_opt_params* param
 		}
 	
 	profile->score = sqrt(score);
-	profile->scale = best_scale(profile, params, x[0], x[1]);
+	profile->scale = sxs_best_scale(profile, params, x[0], x[1]);
 	profile->c1 = x[0];
 	profile->c2 = x[1];
 	
-	compile_intensity(profile, params->rm, x[0], x[1]);
+	sxs_compile_intensity(profile, params->rm, x[0], x[1]);
 
 	//getchar();
 	//return params->isave[30];
 }
 
-double best_scale(struct sxs_profile* profile, struct sxs_opt_params* params, double c1, double c2)
+double sxs_best_scale(struct sxs_profile* profile, struct sxs_opt_params* params, double c1, double c2)
 {
 	int  qnum = profile->qnum;
 	double* q = profile->qvals;
@@ -318,7 +318,7 @@ double best_scale(struct sxs_profile* profile, struct sxs_opt_params* params, do
 	return k;
 }
 
-void compile_intensity(struct sxs_profile* profile, double rm, double c1, double c2)
+void sxs_compile_intensity(struct sxs_profile* profile, double rm, double c1, double c2)
 {
 	int  qnum = profile->qnum;
 	double* q = profile->qvals;
@@ -411,7 +411,7 @@ double point_score(struct sxs_profile* profile, struct sxs_opt_params* params, d
 					 G  * c2 * DW[0] +
 					 c2 * c2 * WW[0];
 				   
-	double k = best_scale(profile, params, c1, c2);
+	double k = sxs_best_scale(profile, params, c1, c2);
 	
 	double buf, tan, in;
 	double q_prev = -1.0, q_cur;
@@ -447,7 +447,7 @@ double point_score(struct sxs_profile* profile, struct sxs_opt_params* params, d
 	return score;
 }
 
-void spf2cross_terms(struct sxs_profile* profile, struct sxs_spf_full* s)
+void sxs_spf2cross_terms(struct sxs_profile* profile, struct sxs_spf_full* s)
 {
 	int qnum = profile->qnum;
 	int L = s->L;
@@ -504,9 +504,9 @@ void spf2cross_terms(struct sxs_profile* profile, struct sxs_spf_full* s)
 	}
 }
 
-void spf2fitted_profile(struct sxs_profile* profile, struct sxs_spf_full* s, struct sxs_opt_params* params)
+void sxs_spf2fitted_profile(struct sxs_profile* profile, struct sxs_spf_full* s, struct sxs_opt_params* params)
 {
-	spf2cross_terms(profile, s);
+	sxs_spf2cross_terms(profile, s);
 	sxs_lbfgs_fitting(profile, params);
 }
 

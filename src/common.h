@@ -1,6 +1,12 @@
 /** @file
  * \brief Common headers and functions needed throughout the library.
  */
+ 
+/**
+ * \defgroup common Common
+ * \brief Common functions and macroses
+ * @{
+ */
 #pragma once
 
 #include <assert.h>
@@ -62,3 +68,5 @@ static inline FILE* sxs_myfopen(char* path, char* mode)
 	
 	return f;
 }
+
+/** @} */

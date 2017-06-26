@@ -4,6 +4,10 @@
  * Center of mass - COM.
  * Center of extrema - COE.
  */
+ 
+/** \addtogroup sph_interface
+ * @{
+ */
 #pragma once
 
 #include "common.h"
@@ -63,6 +67,6 @@ void sxs_ft2euler (struct sxs_euler* euler, struct mol_vector3 *tv, struct mol_m
  */
 void sxs_ft_file2euler_file (const char* eu_path, const char* ft_path, const char* rm_path, struct mol_vector3 *ref_lig);
 
-
+/** @} */
 
 

@@ -96,7 +96,7 @@ void atom_grp2spf_inplace(
 			w_im = spf_coefs->W[q]->im;
 
 			for (int l = 0; l <= L; l++) {
-				bes_val = sf_bessel(l, qvals[q] * sph.r);
+				bes_val = sxs_sbessel(l, qvals[q] * sph.r);
 		
 				for (int m = -l; m <= l; m++) {
 					idx = lm_index(l, m);
@@ -164,7 +164,7 @@ struct sxs_spf_full* atom_grp2spf(
 	double* saxs_sa = NULL;
 	if (water == 1) {
 		saxs_sa = calloc(ag->natoms, sizeof(double));
-		faccs(saxs_sa, ag, 1.4);
+		sxs_faccs(saxs_sa, ag, 1.4);
 	}
 	
 	atom_grp2spf_inplace(spf_coefs, ag, ff_table, qvals, qnum, L, saxs_sa);

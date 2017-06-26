@@ -9,6 +9,11 @@
  * \f$A_{lm}\f$ coefficients.
  * 
  */
+ 
+/** \defgroup sph_interface Manifold
+ * \brief Operates in spherical space.
+ * @{
+ */
 #pragma once
 
 #include "common.h"
@@ -165,3 +170,5 @@ struct sxs_spf_full* sxs_spf_full_read(char* path);
  * @return An instance of sxs_spf_full.
  */
 struct sxs_spf_full* sxs_spf_full_fread(FILE* f);
+
+/** @} */

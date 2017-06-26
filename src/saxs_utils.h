@@ -2,6 +2,11 @@
  * \brief Some useful functions. Most of them are copied from
  * libsaxs.
  */
+ 
+/**
+ * \addtogroup common
+ * @{
+ */
 #pragma once
 
 #include "common.h"
@@ -9,20 +14,6 @@
 #include "mol2/atom_group.h"
 #include "mol2/sasa.h"
 #include "mol2/transform.h"
-
-#ifndef min
-#define min(a,b)				    \
-	({ __typeof__ (a) _a = (a);		\
-		__typeof__ (b) _b = (b);	\
-		_a < _b ? _a : _b; })
-#endif
-
-#ifndef max
-#define max(a,b)				    \
-	({ __typeof__ (a) _a = (a);		\
-		__typeof__ (b) _b = (b);	\
-		_a > _b ? _a : _b; })
-#endif
 
 double mol_atom_group_max_dist(const struct mol_atom_group *ag);
 
@@ -36,7 +27,7 @@ double mol_atom_group_average_radius(const struct mol_atom_group *ag);
  * @param qnum  Array length.
  * @return Array.
  */
-double* mkarray(double begin, double end, int qnum);
+double* sxs_mkarray(double begin, double end, int qnum);
 
 /**
  * Create rotation matrix from Euler angles \f$(\alpha, \beta, \gamma)\f$.
@@ -48,26 +39,34 @@ double* mkarray(double begin, double end, int qnum);
 void sxs_fill_active_rotation_matrix(struct mol_matrix3 *rm, double alpha, double beta, double gamma);
 
 /**
- * Multipy rottion matrices c = a*b.
+ * Multiply rotation matrices c = a*b.
  */
 void sxs_mult_rot_mats(struct mol_matrix3 *c, struct mol_matrix3 *a, struct mol_matrix3 *b);
 
 /**
  * Fill solvent accessibility for each atom.
  */
-void faccs(
+void sxs_faccs(
 	double *fractional_sa,
 	const struct mol_atom_group *ag,
 	double r_solv);
 	
-void upcase(char *s);
+static void upcase(char *s)
+{
+	while(*s) {
+		*s = toupper(*s);
+		s++;
+	}
+}
 
-static inline double sinc(double x)
+/*static inline double sinc(double x)
 {
 	return x == 0.0 ? 1 : sin(x)/x;
-}
+}*/
 
-static inline double square(double x)
+/*static inline double square(double x)
 {
 	return x*x;
-}
+}*/
+
+/** @} */

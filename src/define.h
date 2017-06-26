@@ -1,6 +1,11 @@
 /** @file
  * \brief Constants and flags.
  */
+ 
+/**
+ * \addtogroup common
+ * @{
+ */
 #pragma once
 
 #define SQRTPI 1.77245385091
@@ -11,6 +16,10 @@
 
 #define QMAX 0.5
 #define QNUM 50
+
+/**@def REL_ERR
+ * Default intencity error.
+ */
 #define REL_ERR 0.05
 
 #define MINIMIZER_ITERMAX 1000
@@ -24,3 +33,4 @@
 #define C1_DEFAULT 1.0
 #define C2_DEFAULT 0.0
 
+/** @} */

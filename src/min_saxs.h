@@ -11,6 +11,11 @@
  * is fed to scoring_helper(), which transforms it into compressed form,
  * which together with other optimization params goes to sxs_lbfgs_fitting().
  */
+ 
+/**
+ * \addtogroup profile_interface
+ * @{
+ */
 #pragma once
 
 #include "common.h"
@@ -128,7 +133,7 @@ double* scoring_helper(struct sxs_profile* exp, int qnum, double* qvals);
  * @param c1      First parameter (\f$0.94 < c_1 < 1.04\f$).
  * @param c2      Second parameter (\f$-2 < c_2 < 4\f$).
  */
-void compile_intensity(struct sxs_profile* profile, double rm, double c1, double c2);
+void sxs_compile_intensity(struct sxs_profile* profile, double rm, double c1, double c2);
 
 /**
  * Finds the best scaling factor for the `profile` given `c1` and `c2`. Uses cross-terms sxs_profile::VV ...
@@ -140,7 +145,7 @@ void compile_intensity(struct sxs_profile* profile, double rm, double c1, double
  * @param c2      Second parameter (\f$-2 < c_2 < 4\f$).
  * @return Best scaling parameter for given experimental curve and c1, c2.
  */
-double best_scale(struct sxs_profile* profile, struct sxs_opt_params* params, double c1, double c2);
+double sxs_best_scale(struct sxs_profile* profile, struct sxs_opt_params* params, double c1, double c2);
 
 /**
  * Finds \f$chi\f$-score of the `profile` given `c1` and `c2`, without opitimzation. 
@@ -153,7 +158,7 @@ double best_scale(struct sxs_profile* profile, struct sxs_opt_params* params, do
  * @param c2      Second parameter (\f$-2 < c_2 < 4\f$).
  * @return \f$\chi\f$-score of the `profile` for given experimental curve and c1, c2.
  */
-double point_score(struct sxs_profile* profile, struct sxs_opt_params* params, double c1, double c2);
+double sxs_point_score(struct sxs_profile* profile, struct sxs_opt_params* params, double c1, double c2);
 
 /** 
  * Fills cross-terms sxs_profile::VV ... given SPF coefficients in `s`.
@@ -161,7 +166,7 @@ double point_score(struct sxs_profile* profile, struct sxs_opt_params* params, d
  * @param profile An instance of sxs_profile.
  * @param s       Structure filled with SPF coefficients (see atom_grp2spf).
  */
-void spf2cross_terms(struct sxs_profile* profile, struct sxs_spf_full* s);
+void sxs_spf2cross_terms(struct sxs_profile* profile, struct sxs_spf_full* s);
 
 /** 
  * Fills cross-terms sxs_profile::VV ... given SPF coefficients in `s` and fits 
@@ -171,4 +176,6 @@ void spf2cross_terms(struct sxs_profile* profile, struct sxs_spf_full* s);
  * @param s       Structure filled with SPF coefficients (see atom_grp2spf).
  * @param params  Optimization parameters.
  */
-void spf2fitted_profile(struct sxs_profile* profile, struct sxs_spf_full* s, struct sxs_opt_params* params);
+void sxs_spf2fitted_profile(struct sxs_profile* profile, struct sxs_spf_full* s, struct sxs_opt_params* params);
+
+/** @} */

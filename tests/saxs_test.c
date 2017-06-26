@@ -76,7 +76,7 @@ START_TEST(test_pdb2spf)
 	
 	int L = 15;
 	int qnum = 50;
-	double* qvals = mkarray(0.0, 0.5, qnum);
+	double* qvals = sxs_mkarray(0.0, 0.5, qnum);
 	ck_assert_ptr_nonnull(qvals);
 	
 	struct sxs_spf_full* spf_coef = atom_grp2spf(ag, ff_table, qvals, qnum, L, 1);
@@ -146,7 +146,7 @@ START_TEST(test_sxs_profile_from_spf)
 	
 	int L = 15;
 	int qnum = 50;
-	double* qvals = mkarray(0.0, 0.5, qnum);
+	double* qvals = sxs_mkarray(0.0, 0.5, qnum);
 	ck_assert_ptr_nonnull(qvals);
 	
 	struct sxs_spf_full* spf_coef = atom_grp2spf(ag, ff_table, qvals, qnum, L, 1);
@@ -195,7 +195,7 @@ START_TEST(score_conformations)
 	int nbeta = L + 1;
 	
 	int qnum = QNUM;
-	double* qvals = mkarray(0.0, QMAX, qnum); 
+	double* qvals = sxs_mkarray(0.0, QMAX, qnum); 
 
 	struct mol_prms *prms = mol_prms_read(prm_path);
 	struct saxs_form_factor_table *ff_table = default_ff_table(map_path);
@@ -322,7 +322,7 @@ START_TEST(score_conformations)
 	
 	fclose(euler_file);
 	
-	compute_saxs_scores(saxs_score, 
+	sxs_compute_saxs_scores(saxs_score, 
 	                    c1_list,
 	                    c2_list, 
 	                    saxs_index, 
@@ -371,7 +371,7 @@ START_TEST(minimize_score)
 	char ref_path[] = "ref_fitted_profile";
 	int  L = 15;
 	int  qnum = 50;
-	double* qvals = mkarray(0.0, 0.5, qnum); 
+	double* qvals = sxs_mkarray(0.0, 0.5, qnum); 
 
 	struct mol_prms *prms = mol_prms_read(prm_path);
 	struct saxs_form_factor_table *ff_table = default_ff_table(map_path);
@@ -390,7 +390,7 @@ START_TEST(minimize_score)
 	struct sxs_opt_params* params = sxs_opt_params_create(exp_profile, qvals, qnum, A->rm);
 	
 	struct sxs_profile* profile = sxs_profile_create(qvals, qnum, 1);
-	spf2fitted_profile(profile, A, params);
+	sxs_spf2fitted_profile(profile, A, params);
 	sxs_profile_write("../ref_fitted_profile", profile);
 
 	struct sxs_profile* ref_profile = sxs_profile_read(ref_path);

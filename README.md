@@ -1,4 +1,4 @@
-# libmfftsaxs
+# libfmftsaxs
 ##### Provides tools for manifold-FFT SAXS calculation.
 
 ---
@@ -14,7 +14,7 @@
 ## Installation
 After cloning the repository, do
 ```bash
-$ cd libmfftsaxs
+$ cd libfmftsaxs
 $ mkdir build && cd build
 $ cmake -DBUILD_TESTS=True -DBUILD_DOCS=True -DMPI=False -DCMAKE_BUILD_TYPE=Release  ..
 $ make

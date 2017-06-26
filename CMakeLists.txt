@@ -1,16 +1,16 @@
-if(NOT EMBED_LIBMFFTSAXS)
+if(NOT EMBED_libfmftsaxs)
   cmake_minimum_required(VERSION 3.0)
 endif()
 
-set(libmfftsaxs_version_major 1)
-set(libmfftsaxs_version_minor 0)
-set(libmfftsaxs_version_patch 0)
-set(libmfftsaxs_version
-  "${libmfftsaxs_version_major}.${libmfftsaxs_version_minor}.${libmfftsaxs_version_patch}")
+set(libfmftsaxs_version_major 1)
+set(libfmftsaxs_version_minor 0)
+set(libfmftsaxs_version_patch 0)
+set(libfmftsaxs_version
+  "${libfmftsaxs_version_major}.${libfmftsaxs_version_minor}.${libfmftsaxs_version_patch}")
 
 project(mfftsaxs
   LANGUAGES C
-  VERSION ${libmfftsaxs_version})
+  VERSION ${libfmftsaxs_version})
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
 #################
@@ -95,8 +95,8 @@ file(GLOB LIBLBFGSB_SOURCES
     lbfgsb/src/timer.c)
 file(GLOB LIBLBFGSB_PUBLIC_HEADERS lbfgsb/src/lbfgsb.h)
 
-file(GLOB LIBMFFTSAXS_SOURCES src/*.c)
-file(GLOB LIBMFFTSAXS_PUBLIC_HEADERS src/*.h )
+file(GLOB libfmftsaxs_SOURCES src/*.c)
+file(GLOB libfmftsaxs_PUBLIC_HEADERS src/*.h )
 
 #################
 # FIND PACKAGES #
@@ -117,7 +117,7 @@ set(CONFIG_INSTALL_DIR  "lib/cmake/${PROJECT_NAME}"  CACHE PATH "Where to instal
 
 add_library(lbfgsb OBJECT ${LIBLBFGSB_SOURCES})
 
-add_library(mfftsaxs ${LIBMFFTSAXS_SOURCES} $<TARGET_OBJECTS:lbfgsb>)
+add_library(mfftsaxs ${libfmftsaxs_SOURCES} $<TARGET_OBJECTS:lbfgsb>)
 target_link_libraries(mfftsaxs fftw3 mol2 gmp check rt m)
 target_include_directories(mfftsaxs
   PUBLIC
@@ -125,8 +125,8 @@ target_include_directories(mfftsaxs
     "$<BUILD_INTERFACE:${CMAKE_HOME_DIRECTORY}/lbfgsb/src>"
     "$<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>")
     
-set_target_properties(mfftsaxs PROPERTIES PUBLIC_HEADER "${LIBMFFTSAXS_PUBLIC_HEADERS};${LIBLBFGSB_PUBLIC_HEADERS}")
-set_target_properties(mfftsaxs PROPERTIES VERSION "${libmfftsaxs_version}")
+set_target_properties(mfftsaxs PROPERTIES PUBLIC_HEADER "${libfmftsaxs_PUBLIC_HEADERS};${LIBLBFGSB_PUBLIC_HEADERS}")
+set_target_properties(mfftsaxs PROPERTIES VERSION "${libfmftsaxs_version}")
 
 if (MPI)
   target_include_directories(mfftsaxs 
@@ -159,7 +159,7 @@ install(TARGETS               mfftsaxs
 ############
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/mfftsaxs/mfftsaxsConfigVersion.cmake
-                                 VERSION       ${libmfftsaxs_version}
+                                 VERSION       ${libfmftsaxs_version}
                                  COMPATIBILITY AnyNewerVersion)
 
 configure_package_config_file(cmake/mfftsaxsConfig.cmake.in
@@ -201,7 +201,7 @@ endif(BUILD_DOCS)
 # TESTING #
 ###########
 if(BUILD_TESTS)
-  find_package(Check)
+  find_package(Check REQUIRED)
   if(CHECK_FOUND)
     enable_testing()
     add_subdirectory(tests)

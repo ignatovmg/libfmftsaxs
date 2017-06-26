@@ -34,7 +34,7 @@ int main(int argc, char** argv)
 	if (argc != 9) { print_usage("single_saxs"); }
 	
 	int   qnum = 50;
-	double* qvals = mkarray(0.0, 0.5, qnum); 
+	double* qvals = sxs_mkarray(0.0, 0.5, qnum); 
 
 	SXS_PRINTF("Reading parameters ...\n");
 	struct mol_prms *prms = mol_prms_read(prm_path);

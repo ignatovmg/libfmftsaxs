@@ -1,6 +1,6 @@
 #include "sfbessel.h"
 
-double fact(int x)
+static double fact(int x)
 {	
 	int i;
 	if (x == 0) {
@@ -18,7 +18,7 @@ double fact(int x)
 	}		
 }
 
-double doublefact(int x)
+static double doublefact(int x)
 {	
 	int i;
 	if (x == 0) {
@@ -37,7 +37,7 @@ double doublefact(int x)
 }
 
 
-double sf_bessel(int l, double x)
+double sxs_sbessel(int l, double x)
 {
 	if (x > 0.0) {
 		double two_l_plus_one = 2.0 * (double)l + 1.0;

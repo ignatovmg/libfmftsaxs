@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
 	int znum_total = (int)round((z_end - z_beg) / z_step) + 1;
 
 	int qnum = QNUM;
-	double* qvals = mkarray(0.0, QMAX, qnum); 
+	double* qvals = sxs_mkarray(0.0, QMAX, qnum); 
 
 	if (myrank == 0) { SXS_PRINTF("Reading parameters ...\n"); }
 	struct mol_prms *prms = mol_prms_read(prm_path);
@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
 	}
 	
 	// Compute scores
-	compute_saxs_scores(sx_score_loc, 
+	sxs_compute_saxs_scores(sx_score_loc, 
 	                    c1_list_loc, 
 	                    c2_list_loc,
 	                    sx_index_loc, 

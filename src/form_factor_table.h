@@ -1,6 +1,12 @@
 /** @file 
- * This file is copied from libsaxs without modifications.
+ * \brief This file is copied from libsaxs library without modifications. 
+ * Created by Bing Xia.
  * Here HEAVY_ATOM_SIZE changed from 44 to 43, it was a bug probably.
+ */
+ 
+/**
+ * \addtogroup profile_interface
+ * @{
  */
 #ifndef _FORM_FACTOR_H_
 #define _FORM_FACTOR_H_
@@ -92,5 +98,7 @@ void get_vacuum_ff(double *vacuum_ffs,
 // debugging functions
 void dump_mappings(struct saxs_form_factor_table *table);
 void print_ff_table(struct saxs_form_factor_table *table);
+
+/** @} */
 
 #endif /* _FORM_FACTOR_H_ */

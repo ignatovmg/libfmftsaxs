@@ -2,6 +2,10 @@
  * \brief These functions are borrowed from libfmft. 
  * They compute things related to the spherical space.
  */
+ 
+/** \addtogroup sph_interface
+ * @{
+ */
 #pragma once
 
 #include "common.h"
@@ -98,5 +102,6 @@ void deallocate_d_array(struct d_array* d);
  */
 struct d_array* generate_d_array(const int L, const double beta);
 
+/** @} */
 
 

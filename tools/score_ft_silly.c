@@ -81,7 +81,7 @@ int main(int argc, char** argv)
 	if (argc != 10) { print_usage("score_ft_silly"); }
 	
 	char eul_path[] = "euler_list";
-	double* qvals = mkarray(0.0, 0.5, qnum); 
+	double* qvals = sxs_mkarray(0.0, 0.5, qnum); 
 
 	struct mol_prms *prms = mol_prms_read(prm_path);
 	struct saxs_form_factor_table *ff_table = default_ff_table(map_path);
@@ -142,7 +142,7 @@ int main(int argc, char** argv)
 	// join groups and compute solvent accessibility for each atom
 	struct mol_atom_group *join = mol_atom_group_join(rec_moved, lig_moved);
 	double* saxs_sa = malloc(join->natoms * sizeof(double));
-	faccs(saxs_sa, join, 1.4);
+	sxs_faccs(saxs_sa, join, 1.4);
 	mol_atom_group_free(join);
 	
 	FILE* out = fopen(out_path, "w");
@@ -194,7 +194,7 @@ int main(int argc, char** argv)
 		//sxs_profile_from_spf(profile, coefs, 1.0, 0.0);
 		
 		// assemble and minimize profile
-		spf2fitted_profile(profile, coefs, params);
+		sxs_spf2fitted_profile(profile, coefs, params);
 		
 		SXS_PRINTF("\tfit : %.4f\n", (double)(clock()-time1) / CLOCKS_PER_SEC);     
 		time1 = clock();
