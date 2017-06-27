@@ -33,7 +33,6 @@ There are several tools and examples included in the directory `examples`. Each 
 Most scripts generally start from specifing mapping file and parameter file, where the former is needed to create the form-factor table and the latter to add parameters of the atoms. They reside in `prms` directory.
 
 1. Computing SAXS profile
-
    `run_single_saxs.sh` provides you with an example of SAXS profile calculation. It uses files stored in `dimer1`, which contains unbound models of Lysozyme and PliG, whose complex is reported in PDB as `4G9S`. You can specify **c1**, **c2** and **lmax** - expansion depth (see documentation for the details). After the script is run, the computed SAXS profile is written into `dimer1_saxs_profile` and you can plot it using 
    ```bash
    $ python plot_curves.py dimer1_saxs_profile
@@ -70,5 +69,3 @@ Mikhail Ignatov, Andrey Kazennov and Dima Kozakov.
 1. Svergun, D., C. Barberato, and M. H. J. Koch. "CRYSOL - a Program to Evaluate X-ray Solution Scattering of Biological Macromolecules from Atomic Coordinates." Journal of Applied Crystallography 28.6 (1995): 768-73. Web.
 2. Konarev, P. V., M. V. Petoukhov, and D. I. Svergun. "MASSHA - a Graphics System for Rigid-body Modelling of Macromolecular Complexes against Solution Scattering Data." Journal of Applied Crystallography 34.4 (2001): 527-32. Web.
 3. Xia, Bing, Artem Mamonov, Seppe Leysen, Karen N. Allen, Sergei V. Strelkov, Ioannis Ch. Paschalidis, Sandor Vajda, and Dima Kozakov. "Accounting for Observed Small Angle X-ray Scattering Profile in the Protein-protein Docking Server Cluspro." Journal of Computational Chemistry 36.20 (2015): 1568-572. Web.
-
-
