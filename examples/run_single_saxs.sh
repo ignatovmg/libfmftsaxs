@@ -5,14 +5,14 @@
 map=../prms/pdb_formfactor_mapping_clean.prm
 prm=../prms/atoms.0.0.6.prm.ms.3cap+0.5ace.Hr0rec
 
-rec=4g9s/4g9s_r_native.pdb
-lig=4g9s/4g9s_l_moved.pdb
+rec=dimer1/r_native.pdb
+lig=dimer1/l_native.pdb
 
 c1=1.0 # range [0.96, 1.04]
 c2=0.0 # range [-2, 4]
 lmax=15
 
-profile=4g9s_saxs_profile
+profile=dimer1_saxs_profile
 
 echo -ne "\e[93mGenerate profile with c1 = ${c1}, c2 = ${c2} \033[0m\n"
 ../build/tools/single_saxs $map $prm $rec $lig $c1 $c2 $lmax $profile

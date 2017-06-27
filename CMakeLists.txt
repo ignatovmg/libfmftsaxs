@@ -21,10 +21,10 @@ option( BUILD_SHARED_LIBS  "Build Shared Library (OFF for Static)" OFF )
 option( PROFILE            "Generate profiling information"        OFF )
 option( BUILD_TESTS        "Build tests"                           ON  )
 option( BUILD_DOCS         "Create and install the HTML based 
-                            API documentation (requires Doxygen)"  OFF )
+                            API documentation (requires Doxygen)"  ON )
 option( USE_LTO            "Use Link Time Optimization"            ON  )
 option( MPI                "Message passing interface"             OFF )
-option( VERBOSE            "Verbosity"                             OFF )
+option( VERBOSE            "Verbosity"                             ON  )
 
 # Default installation directory is set to $HOME
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)

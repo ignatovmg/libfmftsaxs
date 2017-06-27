@@ -3,6 +3,9 @@
 # the ligand. Then it scores the conformations provided
 # in ft the files. Takes 5-20 min.
 
+# number of processes
+nproc=4
+
 map=../prms/pdb_formfactor_mapping_clean.prm
 prm=../prms/atoms.0.0.6.prm.ms.3cap+0.5ace.Hr0rec
 
@@ -10,10 +13,10 @@ lmax=15
 c1=1.0
 c2=1.0
 
-pdbdir=1a2k
+pdbdir=dimer2
 
-rec=${pdbdir}/1a2k_r_u_nmin.pdb
-lig=${pdbdir}/1a2k_l_u_nmin.pdb
+rec=${pdbdir}/r_u_nmin.pdb
+lig=${pdbdir}/l_u_nmin.pdb
 
 rm_file=${pdbdir}/rot70k.0.0.6.jm.prm
 ft_file1=${pdbdir}/ft.000.00
@@ -42,7 +45,7 @@ ft_file=${outdir}/ft_combo
 cat $ft_file1 $ft_file2 $ft_file3 > $ft_file
 
 echo -ne "\n\e[93mScore conformations with FFT-SAXS\033[0m\n"
-mpirun -np 4 ../build/tools/correlate $map $prm $ft_file $rm_file $rec $lig $exp $lmax $chi
+mpirun -np $nproc ../build/tools/correlate $map $prm $ft_file $rm_file $rec $lig $exp $lmax euler_list $chi
 
 rm -f ${ft_file}
 

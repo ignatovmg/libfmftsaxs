@@ -34,13 +34,13 @@ Most scripts generally start from specifing mapping file and parameter file, whe
 
 1. Computing SAXS profile
 
-   `run_single_saxs.sh` provides you with an example of SAXS profile calculation. It uses files stored in `4g9s`. You can specify **c1**, **c2** and **lmax** - expansion depth (see documentation for the details). After the script is run, the profile is written into `4g9s_saxs_profile` and you can plot it using 
+   `run_single_saxs.sh` provides you with an example of SAXS profile calculation. It uses files stored in `dimer1`, which contains unbound models of Lysozyme and PliG, whose complex is reported in PDB as `4G9S`. You can specify **c1**, **c2** and **lmax** - expansion depth (see documentation for the details). After the script is run, the computed SAXS profile is written into `dimer1_saxs_profile` and you can plot it using 
    ```bash
-   $ python plot_curves.py 4g9s_saxs_profile
+   $ python plot_curves.py dimer1_saxs_profile
    ```
    
 2. Scoring SAXS profiles
-   `run_silly_scoring.sh` gives you an example of how to score dimer conformations using `score_ft_silly` binary. The conformations are written in the form of ft-file and respective file with rotation matrices. Each conformation is written, transformed into Euler coordinates, then SAXS profile is created for this conformation and minimized through L-BFGS-B algorithm with respect to the parameters **c1**, **c2**, provided the reference (experimental) profile. You can specify the output, where the scores will be written. They are written the form of a table with the following columns: 
+   `run_naive_scoring.sh` gives you an example of how to score dimer conformations using `score_ft_naive` binary. The conformations are written in the form of ft-file and respective file with rotation matrices. Each conformation is written, transformed into Euler coordinates, then SAXS profile is created for this conformation and minimized through L-BFGS-B algorithm with respect to the parameters **c1**, **c2**, provided the reference (experimental) profile. You can specify the output, where the scores will be written. They are written the form of a table with the following columns: 
 | FT index | SAXS-score | c1 | c2 |.
 
 3. Converting FT-file to Euler angles.
@@ -48,7 +48,7 @@ Most scripts generally start from specifing mapping file and parameter file, whe
 | $z$ | $\beta_{rec}$ | $\gamma_{rec}$ | $\alpha_{lig}$ | $\beta_{lig}$ | $\gamma_{lig}$ |. This means, that receptor is rotated by $(0.0, \beta_{rec}, \gamma_{rec})$ and ligand is rotated by $(\alpha_{lig}, \beta_{lig}, \gamma_{lig})$ and translated along z-axis by $z$.
 
 4. Ultra-fast FFT-SAXS scoring.
-   `run_correlate.sh` demonstrates the main feature of this library. It uses the protein complex `1a2k`. First SAXS curve is calculated for the native conformation of the dimer for a chosen pair of parameters **c1**, **c2** (1.0, 1.0 by default). Then we pretend, that this curve is experimental and feed it to the executable `correlate` together with the 3 ft-files, which in total contain 210000 conformations. The ft-files are concatenated and fed to `correlate` as a single list. It uses FFT to score the conformations in super-fast fashion and provides a happy user with the output of the form | Serial number | FT index | SAXS-score | c1 | c2 |, which is then sorted by the serial number (line index in the concatenated list) and split into three lists with SAXS-scores, each of which corresponds to the one of the ft-files. 
+   `run_correlate.sh` demonstrates the main feature of this library. It uses the protein complex `dimer2`, which contains unbound receptor and ligand of `1A2K` complex. First SAXS curve is calculated for the native conformation of the dimer for a chosen pair of parameters **c1**, **c2** (1.0, 1.0 by default). Then we pretend, that this curve is experimental and feed it to the executable `correlate` together with the 3 ft-files, which in total contain 210000 conformations. The ft-files are concatenated and fed to `correlate` as a single list. It uses FFT to score the conformations in super-fast fashion and provides a happy user with the output of the form | Serial number | FT index | SAXS-score | c1 | c2 |, which is then sorted by the serial number (line index in the concatenated list) and split into three lists with SAXS-scores, each of which corresponds to the one of the ft-files. 
 By default the utility `correlate` is launched with `mpirun`, but you can use the serial version, if you did not specify MPI flag during the compilation (which will make it proportinally slower).
 
 You can `plot_curves.py` to build as many curves as you want of a single plot just like this: 

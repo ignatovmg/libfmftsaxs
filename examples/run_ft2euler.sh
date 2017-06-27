@@ -2,12 +2,12 @@
 # This script generates list of dimer conformations in Euler coordinates
 # out of ft file.
 
-pdbdir=4g9s
+pdbdir=dimer1
 
-rec=${pdbdir}/4g9s_r_native.pdb
-lig=${pdbdir}/4g9s_l_moved.pdb
+rec=${pdbdir}/r_native.pdb
+lig=${pdbdir}/l_moved.pdb
 
-rm_file=${pdbdir}/rm.000.00
+rm_file=${pdbdir}/rot70k.0.0.6.jm.prm
 ft_file=${pdbdir}/ft.000.00
 
 euler=euler_list

@@ -1,5 +1,4 @@
-Except of PDB and grid preparation code, the FMFT software  is available under  MIT style license provided below.
-
+The FMFTSAXS software  is available under  MIT style license provided below.
 
 Copyright (c) 2017 Mikhail Ignatov, Andrey Kazennov and Dima Kozakov
 
@@ -21,30 +20,4 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
 SOFTWARE.
 
-Grid and pdb preparation software is available under academic License provided below.
-
-Structural Bioinformatics Laboratory at Boston University (hereinafter know as SBIL BU) and Applied Bio Computing Group at Stony Brook University (hereinafter known as ABCG SBU) agrees to provide to Licensee a proprietary computer program for protein processing and grid preparation known as GRIDP. Authors wish to preserve to itself all of the property rights in and to GRIDP, its related documentation and such enhancements thereto as may, from time to time, be made.
-
-Accordingly, SBIL BU, ABCG SBU  and Licensee agree as follows:
-It is understood that GRIDP  and its component parts, transferred to Licensee pursuant to this Agreement, comprise trade secret and copyrighted subject matter that is proprietary to SBIL BU and  ABCG SBU and, as such, is extremely valuable to SBIL BU and  ABCG SBU , so that its use by or on behalf of Licensee must be carefully and continuously controlled.
-
-Licensee shall have the right and license to use GRIDP for research purposes only. The license to use GRIDP is non-transferable and without the right to sublicense.
-
-Licensee shall have no rights in GRIDP other than as is specifically provided in this Agreement. Licensee specifically agrees that nothing herein shall be deemed to grant to Licensee any rights to use GRIDP for any commercial purpose. ”Commercial Purpose” shall mean the sale, lease, license, or other transfer of GRIDP to a for-profit organization. Commercial Purpose shall also include uses of the Software by any organization, including Licensee, to perform contract research, to produce or manufacture products for general sale, or to conduct research activities that result in any sale, lease, license, or transfer of GRIDP to a for-profit organization. However, industrially sponsored academic research shall not be considered a use of GRIDP for Commercial Purpose per se, unless any of the above conditions of this definition are met.
-
-Licensee agrees to acknowledge the author(s) of GRIDP in any scientific publication of results based in part on the use of GRIDP.
-
-Licensee shall not distribute, release, or otherwise distribute PIPER to any person, corporation, or institution without  SBIL BU and  ABCG SBU  prior written consent. All copies of GRIDP are to remain under your immediate and direct control unless such prior written consent is obtained.
-
-Licensee will take all reasonable precautions to avoid any unauthorized disclosure of GRIDP and will protect GRIDP in the same manner as Licensee protects its own proprietary software.
-
-Licensee shall not copy or reproduce, or permit others to copy or reproduce GRIDP or any component thereof except as required during the authorized use of GRIDP by Licensee.
-
-Licensee agrees not to modify, reverse engineer, disassemble, or decompile GRIDP, or any portion thereof.
-
-The SBIL BU and  ABCG SBU does not have the resources to offer technical support, although the SBIL BU and  ABCG SBU would appreciate being notified of problems or ”bugs” experienced by Licensee in using GRIDP. If you have a technical problem or a ”bug” to report, you may send a brief description thereof in writing to the authors of GRIDP.
-
-From time to time, SBIL BU and  ABCG SBU may incorporate certain features, enhancements or modifications into GRIDP. At its sole discretion, SBIL BU and  ABCG SBU may undertake to incorporate such changes and distribute the Software so modified to all or any of SBIL BU and  ABCG SBU licensees. All such error corrections, bug fixes, patches, updates or other modifications shall be the sole property of SBIL BU and  ABCG SBU
-
-SBIL BU and  ABCG SBU provides GRIDP ”as is” to Licensee. NO WARRANTY, EITHER EXPRESSED OR IMPLIED, IS GRANTED UNDER THIS AGREEMENT, INCLUDING IMPLIED WARRANTIES OF (a) FREEDOM FROM COPYRIGHT INFRINGEMENT, (b) COMMERCIAL UTILITY, (c) VALID COPYRIGHT, (d) MERCHANTABILITY, (e) FITNESS FOR A PARTICULAR PURPOSE, OR (f) USAGE IN THE TRADE OR COURSE OF DEALING, BETWEEN THE PARTIES.
-If GRIDPis installed on computers owned by a corporation or other legal entity, then this agreement is formed by and between SBIL BU and  ABCG SBU and such entity (”Licensee”). You represent and warrant to SBIL BU and  ABCG SBU that you have the authority to bind Licensee to this Agreement.
+The code includes L-BFGS-B library available under BSD 3-clause license. Copyright (c) 2015, Stephen Becker

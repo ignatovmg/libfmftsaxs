@@ -198,14 +198,16 @@ int main(int argc, char** argv)
 		
 		SXS_PRINTF("\tfit : %.4f\n", (double)(clock()-time1) / CLOCKS_PER_SEC);     
 		time1 = clock();
-		
-		SXS_PRINTF("\tchi :%d\t%.3f\t%.3f\t%.3f\n", eu_id, profile->score, profile->c1, profile->c2);
-		fprintf(out, "%d\t%.3f\t%.3f\t%.3f\n", eu_id, profile->score, profile->c1, profile->c2);
 
 		mol_atom_group_free(join);
 		
-		SXS_PRINTF("\tfree: %.4f\n\n", (double)(clock()-time1) / CLOCKS_PER_SEC);     
+		SXS_PRINTF("\tfree: %.4f\n", (double)(clock()-time1) / CLOCKS_PER_SEC);     
 		time1 = clock();
+		
+		fprintf(out, "%d\t%.3f\t%.3f\t%.3f\n", eu_id, profile->score, profile->c1, profile->c2);
+		
+		SXS_PRINTF("\tft index: %d\t score: %.3f\t c1: %.3f\t c2: %.3f\n\n", 
+		           eu_id, profile->score, profile->c1, profile->c2);
 
 	}
 	

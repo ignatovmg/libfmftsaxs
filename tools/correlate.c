@@ -33,18 +33,18 @@ int main(int argc, char *argv[])
 	char* lig_path = argv[6];
 	char* exp_path = argv[7];
 	int   L = atoi(argv[8]);
-	char* out_path = argv[9];
+	char* eul_path = argv[9];
+	char* out_path = argv[10];
 	
 	double z_beg  = 1.0;
 	double z_end  = 80.0;
 	double z_step = 1.0;
 	
-	if (argc != 10) { print_usage("correlate"); }
+	if (argc != 11) { print_usage("correlate"); }
 	
 	
 	int myrank = 0;
 	int nprocs = 1;
-	char eul_path[] = "eulertmp";
 	double starttime, endtime;
 	
 #ifdef _MPI_
@@ -104,10 +104,17 @@ int main(int argc, char *argv[])
 	
 	struct sxs_spf_full* B = atom_grp2spf(pa2, ff_table, qvals, qnum, L, 1);
 	
-	struct mol_vector3 ref_lig;
-	MOL_VEC_SUB(ref_lig, com, coe);
-	MOL_VEC_MULT_SCALAR(ref_lig, ref_lig, -1.0);
-	sxs_ft_file2euler_file (eul_path, ft__path, rm__path, &ref_lig);
+	// write Euler file
+	if (myrank == 0) { 
+		struct mol_vector3 ref_lig;
+		MOL_VEC_SUB(ref_lig, com, coe);
+		MOL_VEC_MULT_SCALAR(ref_lig, ref_lig, -1.0);
+		sxs_ft_file2euler_file (eul_path, ft__path, rm__path, &ref_lig);
+	}
+	
+#ifdef _MPI_
+	MPI_Barrier(MPI_COMM_WORLD);
+#endif
 	
 //=================================================================
 //=================== experiment ==================================
@@ -187,10 +194,10 @@ int main(int argc, char *argv[])
 	
 	sx_index_loc = calloc(ft_num_loc, sizeof(int));
 	sx_score_loc = calloc(ft_num_loc, sizeof(double));
-	ft_list_loc = calloc(ft_num_loc, sizeof(int));
-	c1_list_loc = calloc(ft_num_loc, sizeof(double));
-	c2_list_loc = calloc(ft_num_loc, sizeof(double));
-	order_loc = calloc(ft_num_loc, sizeof(int));
+	ft_list_loc  = calloc(ft_num_loc, sizeof(int));
+	c1_list_loc  = calloc(ft_num_loc, sizeof(double));
+	c2_list_loc  = calloc(ft_num_loc, sizeof(double));
+	order_loc    = calloc(ft_num_loc, sizeof(int));
 
 	double b_step = M_PI / L;
 	double a_step = 2.0 * M_PI / (2*L+1);

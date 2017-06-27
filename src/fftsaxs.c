@@ -482,8 +482,10 @@ static void compute_sum2(
 					Wval_im = W_im[aidx];
 					
 					sum1idx4 = sum1idx3 + l;
-					val_re[0] += d_val * (  Vval_re * sum_v_re[sum1idx4] - Vval_im * sum_v_im[sum1idx4]);            
+					val_re[0] += d_val * (  Vval_re * sum_v_re[sum1idx4] - Vval_im * sum_v_im[sum1idx4]);  
+					          
 					val_im[0] += d_val * (  Vval_re * sum_v_im[sum1idx4] + Vval_im * sum_v_re[sum1idx4]);
+					
 					
 					val_re[1] += d_val * (  Vval_re * sum_d_re[sum1idx4] + Dval_re * sum_v_re[sum1idx4]
 					                      - Vval_im * sum_d_im[sum1idx4] - Dval_im * sum_v_im[sum1idx4]);	  
@@ -496,7 +498,9 @@ static void compute_sum2(
 					                      + Vval_im * sum_w_re[sum1idx4] + Wval_im * sum_v_re[sum1idx4]);
 					                      
 					val_re[3] += d_val * (  Dval_re * sum_d_re[sum1idx4] - Dval_im * sum_d_im[sum1idx4]);
+					
 					val_im[3] += d_val * (  Dval_re * sum_d_im[sum1idx4] + Dval_im * sum_d_re[sum1idx4]);
+					
 
 					val_re[4] += d_val * (  Dval_re * sum_w_re[sum1idx4] + Wval_re * sum_d_re[sum1idx4] 
 					                      - Dval_im * sum_w_im[sum1idx4] - Wval_im * sum_d_im[sum1idx4]);	  
@@ -504,6 +508,7 @@ static void compute_sum2(
 					                      + Dval_im * sum_w_re[sum1idx4] + Wval_im * sum_d_re[sum1idx4]);
 					                      
 					val_re[5] += d_val * (Wval_re * sum_w_re[sum1idx4] - Wval_im * sum_w_im[sum1idx4]);	  
+					
 					val_im[5] += d_val * (Wval_re * sum_w_im[sum1idx4] + Wval_im * sum_w_re[sum1idx4]);
 				}	
 				
@@ -878,15 +883,9 @@ void sxs_compute_saxs_scores(
 					const_int_WW, 
 					mask,
 					L);
-					
-				//printf("\t%.5f: (fill_const)\n", (double)(clock()-time1) / CLOCKS_PER_SEC);
-				//time1 = clock();
 
 				for (int q = 0; q < qnum; q++) {
-					//if (q == 20)
-					//	printf("q = %i\nnprofile = %i\n", q, nprofile);
-						
-					clock_t time = clock();
+					//clock_t time;// = clock();
 
 					compute_sum2(sum2, 
 					             sum_v_re[beta2], 
@@ -897,40 +896,14 @@ void sxs_compute_saxs_scores(
 					             sum_w_im[beta2], 
 					             d_beta1, A, q, L);
 					
-					//if (q == 20) {
-					//	printf("\t%.5f: (sum2)\n", (double)(clock()-time) / CLOCKS_PER_SEC);
-					//}
-					//time = clock();
-					
-					//if (q == 20)
-					//	printf("%.5f\n", (double)(clock()-time) / CLOCKS_PER_SEC);
-					//time = clock();
-					
-					//time = clock();
-					if (nprofile >= 15) {
+					if (nprofile >= 30) {
 						fftw_execute(plan);
-					
-						/*if (q == 20) {
-							printf("\t%.5f: (fast ft)\n", (double)(clock()-time) / CLOCKS_PER_SEC);
-						}
-						time = clock();*/
 					} else {
 						simple_ft(fft, sum2, mask, L);
-					
-						/*if (q == 20) {
-							printf("\t%.5f: (smpl ft)\n", (double)(clock()-time) / CLOCKS_PER_SEC);
-						}*/
 					}
 					
 					fill_var(profiles, fft, mask, q, L);
-					
-					//if (q == 20) {
-					//	printf("\t%.5f: (fill var)\n", (double)(clock()-time) / CLOCKS_PER_SEC);
-					//}
 				}
-				
-				//printf("\t%.5f: (fill FFT)\n", (double)(clock()-time1) / CLOCKS_PER_SEC);
-				//time1 = clock();
 				
 				// minimization over c1, c2
 				sxs_fit_params(profiles, params, mask, fft_size);
@@ -942,9 +915,6 @@ void sxs_compute_saxs_scores(
 					    c1_5d[offset + i] = profiles[i]->c1;
 					    c2_5d[offset + i] = profiles[i]->c2;
 				}
-				
-				//printf("(beta1, beta2) = (%.3f, %.3f): %.5f\n\n", b1_val, b2_val, (double)(clock()-time2) / CLOCKS_PER_SEC);
-				//time2 = clock();
 			}
 		}
 		
