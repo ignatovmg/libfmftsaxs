@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
 	mol_atom_group_free(pa2);
 	
 //=================================================================
-//=========================== massha ==============================  	  
+//=========================== correlate ===========================  	  
 	int* rec_num_list = calloc(nprocs, sizeof(int));
 	
 	double* zvals = calloc(znum_total, sizeof(double));
@@ -221,7 +221,6 @@ int main(int argc, char *argv[])
 			
 				euler.a2 = 2*M_PI - euler.a2;
 				euler.g2 = 2*M_PI - euler.g2;
-				//euler.g1 = 2*M_PI - euler.g2;
 	
 				tmp_id = j * nbeta;
 
@@ -368,7 +367,7 @@ int main(int argc, char *argv[])
 		
 		stream = fopen(out_path, "w");
 		for (int i = 0; i < ft_num_glb; i++) {
-			fprintf(stream, "%6.d\t%d\t%.3lf\t%.3lf\t%.3lf\n", order_glb[i], 
+			fprintf(stream, "%-6d\t%d\t%.3lf\t%.3lf\t%.3lf\n", order_glb[i], 
 			                                              ft_list_glb[i], 
 			                                             sx_score_glb[i], 
 			                                             c1_list_glb[i], 
