@@ -27,10 +27,10 @@
 
 #define C1_LOWER  0.96
 #define C1_UPPER  1.04
-#define C2_LOWER -2.00
-#define C2_UPPER  4.00
+#define C2_LOWER  0.00
+#define C2_UPPER  2.00
 
 #define C1_DEFAULT 1.0
-#define C2_DEFAULT 0.0
+#define C2_DEFAULT 0.5
 
 /** @} */

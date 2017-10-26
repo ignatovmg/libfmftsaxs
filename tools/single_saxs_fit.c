@@ -14,7 +14,7 @@ void print_usage(char *exe_name)
 {
 	fprintf(stderr,
 		  "Usage: %s MAPPING_PRM ATOMPRM REC_PATH LIG_PATH "
-		  "C1 C2 QNUM L PROFILE_PATH\n",
+		  "EXP_PATH L PROFILE_PATH\n",
 		  basename(exe_name));
 
 	exit(EXIT_FAILURE);
@@ -26,14 +26,13 @@ int main(int argc, char** argv)
 	char* prm_path = argv[2];
 	char* rec_path = argv[3];
 	char* lig_path = argv[4];
-	double c1 = atof(argv[5]);
-	double c2 = atof(argv[6]);
-	int   qnum = atoi(argv[7]);
-	int    L  = atoi(argv[8]);
-	char* out_path = argv[9];
+	char* exp_path = argv[5];
+	int   L        = atoi(argv[6]);
+	char* out_path = argv[7];
 	
-	if (argc != 10) { print_usage("single_saxs"); }
+	if (argc != 8) { print_usage("single_saxs_fit"); }
 	
+	int   qnum = 50;
 	double* qvals = sxs_mkarray(0.0, 0.5, qnum); 
 
 	SXS_PRINTF("Reading parameters ...\n");
@@ -50,7 +49,12 @@ int main(int argc, char** argv)
 	struct mol_atom_group *lig = mol_read_pdb(lig_path);
 	mol_atom_group_add_prms(lig, prms);
 	
+	SXS_PRINTF("Reading experiment ...\n");
+	struct sxs_profile* exp_profile = sxs_profile_read(exp_path);
+	
 	struct mol_atom_group *join = mol_atom_group_join(rec, lig);
+	double join_rad = mol_atom_group_average_radius(join);
+	struct sxs_opt_params* params = sxs_opt_params_create(exp_profile, qvals, qnum, join_rad);
 
 	struct mol_vector3 com;
 	centroid(&com, join);
@@ -60,8 +64,13 @@ int main(int argc, char** argv)
 	SXS_PRINTF("Computing coefficients ...\n");
 	struct sxs_profile* profile = sxs_profile_create(qvals, qnum, 1);
 	struct sxs_spf_full *spf = atom_grp2spf(join, ff_table, qvals, qnum, L, 1);
-	sxs_profile_from_spf(profile, spf, c1, c2);
-
+	
+	SXS_PRINTF("Fitting parameters ...\n\n");
+	sxs_spf2fitted_profile(profile, spf, params);
+	
+	printf("Score: %.3f\nc1   : %.3f\nc2   : %.3f\n\n", 
+	       profile->score, profile->c1, profile->c2);
+	       
 	sxs_profile_write(out_path, profile);
 	
 	SXS_PRINTF("Profile is written into %s\n", out_path);

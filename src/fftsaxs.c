@@ -985,3 +985,264 @@ void sxs_compute_saxs_scores(
 	sxs_myfree(zb1b2_skip);
 }
 
+
+
+void sxs_fft_scores_full(
+    struct sxs_spf_full* A,
+	struct sxs_spf_full* B,
+    struct sxs_opt_params* params,
+	double* qvals, int qnum, 
+	double* zvals, int znum, 
+	int L)
+{
+#ifdef _MPI_	
+	int myrank = 0;
+	int mpi_flag;
+	if (MPI_Initialized(&mpi_flag) != MPI_SUCCESS) {
+		MPI_Abort (MPI_COMM_WORLD, 1);
+	}
+	
+	if (mpi_flag == 1) {
+		if (MPI_Comm_rank(MPI_COMM_WORLD, &myrank) != MPI_SUCCESS) {
+			MPI_Abort (MPI_COMM_WORLD, 1);
+		}
+	}
+#endif			
+	int nbeta = L + 1;
+	
+	double beta_bgn = 0.0;
+	double beta_end = M_PI;
+	double beta_step = (beta_end - beta_bgn) / (nbeta - 1);
+	
+	double* const_int_VV = comp_const_int(A->V, A->V, B->V, B->V, qnum);
+	double* const_int_VD = comp_const_int(A->V, A->D, B->V, B->D, qnum);
+	double* const_int_VW = comp_const_int(A->V, A->W, B->V, B->W, qnum);
+	double* const_int_DD = comp_const_int(A->D, A->D, B->D, B->D, qnum);
+	double* const_int_DW = comp_const_int(A->D, A->W, B->D, B->W, qnum);
+	double* const_int_WW = comp_const_int(A->W, A->W, B->W, B->W, qnum);
+
+	double* bessel = calloc(qnum*(2*L+1), sizeof(double));
+	
+	double* d_symb = calloc((L+1)*(L+1)*(L+1)*(2*L+1), sizeof(double));
+	
+	// small Wigner d-matrices for each beta in [0, PI]
+	struct d_array** d_wigner = calloc(nbeta, sizeof(struct d_array*));
+	
+	// translation matrix
+	double* t_matrix_re = calloc(qnum*(L+1)*(L+1)*(L+1), sizeof(double));
+	double* t_matrix_im = calloc(qnum*(L+1)*(L+1)*(L+1), sizeof(double));
+	
+	// sums over B coefficients
+	int sum_stride = qnum*(2*L+1)*(2*L+1)*(L+1);
+	double** sum_v_re = calloc(nbeta, sizeof(double*));
+	double** sum_v_im = calloc(nbeta, sizeof(double*));
+	double** sum_d_re = calloc(nbeta, sizeof(double*));
+	double** sum_d_im = calloc(nbeta, sizeof(double*));
+	double** sum_w_re = calloc(nbeta, sizeof(double*));
+	double** sum_w_im = calloc(nbeta, sizeof(double*));
+
+	for (int i = 0; i < nbeta; i++) {
+		sum_v_re[i] = calloc(sum_stride, sizeof(double));
+		sum_v_im[i] = calloc(sum_stride, sizeof(double));
+		sum_d_re[i] = calloc(sum_stride, sizeof(double));
+		sum_d_im[i] = calloc(sum_stride, sizeof(double));
+		sum_w_re[i] = calloc(sum_stride, sizeof(double));
+		sum_w_im[i] = calloc(sum_stride, sizeof(double));
+	}
+	
+	// fft setup
+	int fft_size = (2*L+1)*(2*L+1)*(2*L+1);
+	int fft_many_size[] = {2*L+1, 2*L+1, 2*L+1};
+
+	fftw_complex* sum2 = (fftw_complex*) fftw_malloc(6 * fft_size * sizeof(fftw_complex));
+	fftw_complex* fft  = (fftw_complex*) fftw_malloc(6 * fft_size * sizeof(fftw_complex));
+	fftw_plan plan = fftw_plan_many_dft(3, fft_many_size, 6, 
+										sum2, NULL, 1, fft_size, 
+										fft,  NULL, 1, fft_size, 
+										FFTW_FORWARD, FFTW_PATIENT);
+	// allocate profiles
+	struct sxs_profile** profiles = calloc(fft_size, sizeof(struct sxs_profile*)); 
+	for (int i = 0; i < fft_size; i++) {
+		profiles[i] = sxs_profile_create(qvals, qnum, 1);
+	}
+
+	// here we do not skip any profiles, so fill mask with ones
+	int* mask = calloc(fft_size, sizeof(int));
+	for (int i = 0; i < fft_size; i++) {
+		mask[i] = 1;
+	}
+	
+	// compute d_lm(l1, p)
+	mpf_t* fact = generate_desc_fact_array_arb(4*L+1);
+
+	compute_d_symb(d_symb, L, fact);
+	
+	// compute d-matrices
+	for (int i = 0; i < nbeta; i++) {
+		d_wigner[i] = generate_d_array(L, beta_bgn + i * beta_step);
+	}
+	
+	// z loop
+	int counter = 0;
+	for (int z_idx = 0; z_idx < znum; z_idx++) { 
+	
+		double zval = zvals[z_idx];
+		
+#ifdef _MPI_	
+		SXS_PRINTF("process %i: z = %.2f\n", myrank, zval);
+#else
+		SXS_PRINTF("z = %.2f\n", zval);
+#endif		
+		
+		
+		besselj_n(bessel, zval, qvals, qnum, L);
+		
+		fill_t_matrix(
+			t_matrix_re, 
+			t_matrix_im, 
+			d_symb, bessel, 
+			qvals, qnum, L);
+			
+		// precompute sums for ligand beta angles
+		for (int beta2 = 0; beta2 < nbeta; beta2++) {
+		
+			compute_sum1(
+				sum_v_re[beta2], 
+				sum_v_im[beta2],
+				t_matrix_re, 
+				t_matrix_im,
+				d_wigner[beta2],
+				B->V, qnum, L);
+				
+			compute_sum1(
+				sum_d_re[beta2], 
+				sum_d_im[beta2],
+				t_matrix_re, 
+				t_matrix_im,
+				d_wigner[beta2],
+				B->D, qnum, L);
+				
+			compute_sum1(
+				sum_w_re[beta2], 
+				sum_w_im[beta2],
+				t_matrix_re, 
+				t_matrix_im,
+				d_wigner[beta2],
+				B->W, qnum, L);
+		}
+		
+		// main loop
+		for (int beta1 = 0; beta1 < nbeta; beta1++) { 
+			double b1_val = beta_bgn + beta1 * beta_step;
+			
+#ifdef _MPI_
+			SXS_PRINTF("process %i: z = %.2f\tbeta1 = %.2f\n", myrank, zval, b1_val);	
+#else
+			SXS_PRINTF("beta1: %.2f\n", b1_val);
+#endif
+		
+			struct d_array* d_beta1 = d_wigner[beta1];
+		
+			for (int beta2 = 0; beta2 < nbeta; beta2++) {
+			
+				double b2_val = beta_bgn + beta2 * beta_step;
+
+#ifdef _MPI_
+			SXS_PRINTF("process %i: z = %.2f\tbeta1 = %.2f\tbeta2 = %.2f\n", myrank, zval, b1_val, b2_val);	
+#else
+			SXS_PRINTF("beta2: %.2f\n", b2_val);
+#endif
+				
+				clock_t time1 = clock();
+				clock_t time2 = clock();
+
+				fill_const(profiles, 
+					const_int_VV, 
+					const_int_VD, 
+					const_int_VW, 
+					const_int_DD, 
+					const_int_DW,
+					const_int_WW, 
+					mask,
+					L);
+
+				for (int q = 0; q < qnum; q++) {
+
+					compute_sum2(sum2, 
+					             sum_v_re[beta2], 
+					             sum_v_im[beta2], 
+					             sum_d_re[beta2], 
+					             sum_d_im[beta2], 
+					             sum_w_re[beta2], 
+					             sum_w_im[beta2], 
+					             d_beta1, A, q, L);
+					
+					fftw_execute(plan);
+					
+					fill_var(profiles, fft, mask, q, L);
+				}
+				
+				// minimization over c1, c2
+				sxs_fit_params(profiles, params, mask, fft_size);
+				
+				// write scores to file
+				char outpath[200];
+				sprintf(outpath, "scores.%02i.%02i.%02i.%02i", myrank, z_idx, beta1, beta2);
+				
+				FILE* out = fopen(outpath, "w");
+				fprintf(out, "%i\t%.3f\t%.3f\t%.3f\n", L, zval, b1_val, b2_val);
+				
+				for (int i = 0; i < fft_size; i++) {
+					fprintf(out, "%.3f\t%.3f\t%.3f\n", profiles[i]->score, profiles[i]->c1, profiles[i]->c2);
+				}
+				
+				fclose(out);
+			}
+		}
+	}
+	
+	// let them free
+	for (int i = 0; i < fft_size; i++) {
+		sxs_profile_free(profiles[i]);
+	}
+	sxs_myfree(profiles);
+	
+	for (int i = 0; i < nbeta; i++) {
+		deallocate_d_array(d_wigner[i]);
+	}
+	sxs_myfree(d_wigner);
+	
+	for (int i = 0; i < nbeta; i++) {
+		sxs_myfree(sum_v_re[i]);
+		sxs_myfree(sum_v_im[i]);
+		sxs_myfree(sum_d_re[i]);
+		sxs_myfree(sum_d_im[i]);
+		sxs_myfree(sum_w_re[i]);
+		sxs_myfree(sum_w_im[i]);
+	}
+	sxs_myfree(sum_v_re);
+	sxs_myfree(sum_v_im);
+	sxs_myfree(sum_d_re);
+	sxs_myfree(sum_d_im);
+	sxs_myfree(sum_w_re);
+	sxs_myfree(sum_w_im);
+	sxs_myfree(const_int_VV);
+	sxs_myfree(const_int_VD);
+	sxs_myfree(const_int_VW);
+	sxs_myfree(const_int_DD);
+	sxs_myfree(const_int_DW);
+	sxs_myfree(const_int_WW);
+	sxs_myfree(bessel);
+	sxs_myfree(d_symb);
+	sxs_myfree(t_matrix_re);
+	sxs_myfree(t_matrix_im);
+	fftw_free(sum2);
+	fftw_free(fft);
+	fftw_destroy_plan(plan);
+	sxs_myfree(mask);
+}
+
+
+
+
+

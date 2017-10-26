@@ -78,6 +78,19 @@ void sxs_fill_active_rotation_matrix(struct mol_matrix3 *rm, double alpha, doubl
 //	{ sin(b)*cos(a)                       ,  sin(b)*sin(a)                       ,  cos(b)       }
 }
 
+void sxs_fill_passive_rotation_matrix(struct mol_matrix3 *rm, double alpha, double beta, double gamma)
+{
+        rm->m11 = cos(gamma)*cos(beta)*cos(alpha) - sin(gamma)*sin(alpha);
+        rm->m12 = cos(gamma)*cos(beta)*sin(alpha) + sin(gamma)*cos(alpha);
+        rm->m13 = -cos(gamma)*sin(beta);
+        rm->m21 = -sin(gamma)*cos(beta)*cos(alpha) - cos(gamma)*sin(alpha);
+        rm->m22 = -sin(gamma)*cos(beta)*sin(alpha) + cos(gamma)*cos(alpha);
+        rm->m23 = sin(gamma)*sin(beta);
+        rm->m31 = sin(beta)*cos(alpha);
+        rm->m32 = sin(beta)*sin(alpha);
+        rm->m33 = cos(beta);
+}
+
 void sxs_mult_rot_mats(struct mol_matrix3 *c, struct mol_matrix3 *a, struct mol_matrix3 *b)
 {
 	c->m11 = a->m11 * b->m11 + a->m12 * b->m21 + a->m13 * b->m31;

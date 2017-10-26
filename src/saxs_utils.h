@@ -30,13 +30,23 @@ double mol_atom_group_average_radius(const struct mol_atom_group *ag);
 double* sxs_mkarray(double begin, double end, int qnum);
 
 /**
- * Create rotation matrix from Euler angles \f$(\alpha, \beta, \gamma)\f$.
+ * Create active rotation matrix from Euler angles \f$(\alpha, \beta, \gamma)\f$.
  * @param rm Rotation matrix.
  * @param alpha Alpha angle.
  * @param beta Beta angle.
  * @param gamma Gamma angle.
  */
 void sxs_fill_active_rotation_matrix(struct mol_matrix3 *rm, double alpha, double beta, double gamma);
+
+/**
+ * Create passive rotation matrix from Euler angles \f$(\alpha, \beta, \gamma)\f$.
+ * @param rm Rotation matrix.
+ * @param alpha Alpha angle.
+ * @param beta Beta angle.
+ * @param gamma Gamma angle.
+ */
+void sxs_fill_passive_rotation_matrix(struct mol_matrix3 *rm, double alpha, double beta, double gamma);
+
 
 /**
  * Multiply rotation matrices c = a*b.

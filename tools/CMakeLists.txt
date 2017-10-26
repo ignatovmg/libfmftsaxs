@@ -1,5 +1,14 @@
 include_directories(../src)
 
+add_executable(index2ft index2ft.c)
+target_link_libraries(index2ft fmftsaxs)
+
+add_executable(single_saxs_fit single_saxs_fit.c)
+target_link_libraries(single_saxs_fit fmftsaxs)
+
+add_executable(puresaxs puresaxs.c)
+target_link_libraries(puresaxs fmftsaxs)
+
 add_executable(ft2euler ft2euler.c)
 target_link_libraries(ft2euler fmftsaxs) 
 

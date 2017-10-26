@@ -103,6 +103,14 @@ void sxs_compute_saxs_scores(
 	double* qvals, int qnum, 
 	double* zvals, int znum, 
 	int L, int skip);
+	
+void sxs_fft_scores_full(
+    struct sxs_spf_full* A,
+	struct sxs_spf_full* B,
+    struct sxs_opt_params* params,
+	double* qvals, int qnum, 
+	double* zvals, int znum, 
+	int L);
 
 // for basic clustering
 /*typedef struct compare_class_

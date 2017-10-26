@@ -23,7 +23,7 @@ int main(int argc, char** argv)
 
 	struct mol_vector3 com;
 	centroid(&com, lig);
-	
+
 	struct mol_vector3 ref_lig;
 	MOL_VEC_SUB(ref_lig, com, coe);
 
